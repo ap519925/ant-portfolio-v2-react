@@ -1,0 +1,144 @@
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--nav-height);
+    z-index: 1000;
+    transition: all 0.3s ease;
+    background: transparent;
+}
+
+.navbar.scrolled {
+    background: rgba(10, 10, 15, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--glass-border);
+    height: 70px;
+}
+
+.navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    /* Center align image and dot */
+    text-decoration: none;
+}
+
+.logo-img {
+    height: 50px;
+    width: 60px;
+    /* Append ratio */
+    background-color: var(--accent-color);
+    mask: url(/alogo.png) no-repeat center / contain;
+    -webkit-mask: url(/alogo.png) no-repeat center / contain;
+    transition: background-color 0.3s ease;
+}
+
+.dot-placeholder {
+    width: 10px;
+    height: 10px;
+    background: transparent;
+    /* Invisible target for the ball */
+    border-radius: 50%;
+    margin-left: 2px;
+    align-self: flex-end;
+    margin-bottom: 2px;
+    /* Slight adjustment for proper period baseline */
+}
+
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+.nav-link {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    position: relative;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: #fff;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent-color);
+    transition: width 0.3s;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.hamburger {
+    display: none;
+    cursor: pointer;
+    color: var(--text-primary);
+}
+
+.social-links-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .hamburger {
+        display: block;
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 70px);
+        background: var(--bg-primary);
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 30px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .nav-menu.active {
+        transform: translateX(0);
+    }
+
+    .nav-link {
+        font-size: 1.5rem;
+    }
+
+    .social-links-mobile {
+        display: flex;
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    /* Hide placeholder on mobile if desired, or keep it */
+    .theme-toggle-placeholder {
+        display: none;
+    }
+}
+
+.theme-toggle-placeholder {
+    width: 32px;
+    height: 32px;
+    /* border: 1px dashed rgba(255,255,255,0.2); Debugging help */
+    margin-left: 20px;
+    border-radius: 50%;
+}

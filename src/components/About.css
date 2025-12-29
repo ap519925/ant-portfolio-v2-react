@@ -1,0 +1,227 @@
+/* About Container Split */
+.about-container {
+    display: flex;
+    gap: 60px;
+    align-items: flex-start;
+}
+
+.about-left {
+    flex: 0 0 35%;
+    /* Keep width fixed */
+}
+
+.about-right {
+    flex: 1;
+}
+
+.sticky-wrapper {
+    position: sticky;
+    top: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.section-title.text-left {
+    text-align: left;
+    margin-bottom: 30px;
+    left: 0;
+    transform: none;
+}
+
+.section-title.text-left::after {
+    left: 0;
+    transform: none;
+}
+
+.profile-card,
+.skills-card {
+    margin-bottom: 20px;
+}
+
+.bio-text {
+    line-height: 1.8;
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+}
+
+.highlight {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.tags-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.skill-tag {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    transition: all 0.3s;
+}
+
+.skill-tag:hover {
+    border-color: var(--accent-color);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+/* Timeline */
+.timeline-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.timeline-header h3 {
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.timeline-wrapper {
+    position: relative;
+    padding-left: 40px;
+    border-left: 2px solid rgba(255, 255, 255, 0.05);
+}
+
+.timeline-line {
+    position: absolute;
+    left: -2px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--accent-color);
+    transform-origin: top;
+}
+
+.timeline-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.expand-icon {
+    color: var(--accent-color);
+    padding-top: 5px;
+    opacity: 0.5;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.timeline-item-card:hover .expand-icon {
+    opacity: 1;
+    transform: translateY(2px);
+}
+
+.timeline-item-card {
+    position: relative;
+    margin-bottom: 40px;
+    padding: 25px;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    backdrop-filter: blur(5px);
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+.timeline-item-card:hover {
+    transform: translateX(10px);
+    border-color: var(--accent-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.timeline-item-card.expanded {
+    border-color: var(--accent-color);
+    transform: translateX(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -46px;
+    top: 30px;
+    width: 14px;
+    height: 14px;
+    background: var(--bg-primary);
+    border: 3px solid var(--accent-color);
+    border-radius: 50%;
+    z-index: 2;
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.timeline-date {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    background: rgba(var(--accent-rgb, 99, 102, 241), 0.1);
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.timeline-role {
+    font-size: 1.3rem;
+    margin-bottom: 5px;
+    color: #fff;
+    line-height: 1.3;
+}
+
+.timeline-company {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+    font-weight: 400;
+}
+
+.timeline-details {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+}
+
+.timeline-details li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.timeline-details li::before {
+    content: '▹';
+    position: absolute;
+    left: 0;
+    color: var(--accent-color);
+}
+
+@media (max-width: 960px) {
+    .about-container {
+        flex-direction: column;
+    }
+
+    .about-left,
+    .about-right {
+        width: 100%;
+        flex: none;
+    }
+
+    .sticky-wrapper {
+        position: relative;
+        top: 0;
+        margin-bottom: 50px;
+    }
+}

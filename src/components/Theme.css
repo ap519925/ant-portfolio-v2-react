@@ -1,0 +1,108 @@
+[data-theme='light'] {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f3f4f6;
+    --text-primary: #1f2937;
+    --text-secondary: #4b5563;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --accent-glow: rgba(99, 102, 241, 0.2);
+    /* Keep accent same or change? Let's keep Indigo for light */
+    --accent-color: #6366f1;
+}
+
+[data-theme='matrix'] {
+    --bg-primary: #000000;
+    --bg-secondary: #0d110d;
+    --text-primary: #00ff41;
+    --text-secondary: #008f11;
+    --accent-color: #00ff41;
+    --accent-glow: rgba(0, 255, 65, 0.4);
+    --card-bg: rgba(0, 20, 0, 0.3);
+    --glass-border: rgba(0, 255, 65, 0.2);
+}
+
+[data-theme='ocean'] {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent-color: #38bdf8;
+    --accent-glow: rgba(56, 189, 248, 0.4);
+    --card-bg: rgba(30, 41, 59, 0.5);
+    --glass-border: rgba(56, 189, 248, 0.2);
+}
+
+[data-theme='sunset'] {
+    --bg-primary: #2a1b3d;
+    --bg-secondary: #44315f;
+    --text-primary: #ffe3e3;
+    --text-secondary: #d4a5a5;
+    --accent-color: #ff6b6b;
+    --accent-glow: rgba(255, 107, 107, 0.4);
+    --card-bg: rgba(68, 49, 95, 0.5);
+    --glass-border: rgba(255, 107, 107, 0.2);
+}
+
+[data-theme='cyberpunk'] {
+    --bg-primary: #0b0d17;
+    --bg-secondary: #1a1d2d;
+    --text-primary: #00f3ff;
+    --text-secondary: #b300ff;
+    --accent-color: #f700ff;
+    --accent-glow: rgba(247, 0, 255, 0.5);
+    --card-bg: rgba(26, 29, 45, 0.8);
+    --glass-border: rgba(0, 243, 255, 0.3);
+}
+
+[data-theme='forest'] {
+    --bg-primary: #051405;
+    --bg-secondary: #0d260d;
+    --text-primary: #e8f5e9;
+    --text-secondary: #a5d6a7;
+    --accent-color: #4caf50;
+    --accent-glow: rgba(76, 175, 80, 0.4);
+    --card-bg: rgba(13, 38, 13, 0.6);
+    --glass-border: rgba(76, 175, 80, 0.2);
+}
+
+[data-theme='coffee'] {
+    --bg-primary: #2c241b;
+    --bg-secondary: #43362a;
+    --text-primary: #ede0d4;
+    --text-secondary: #d6ccc2;
+    --accent-color: #ddb892;
+    --accent-glow: rgba(221, 184, 146, 0.4);
+    --card-bg: rgba(67, 54, 42, 0.6);
+    --glass-border: rgba(221, 184, 146, 0.2);
+}
+
+[data-theme='royal'] {
+    --bg-primary: #1a0b2e;
+    --bg-secondary: #2d1b4e;
+    --text-primary: #f3e5f5;
+    --text-secondary: #d1c4e9;
+    --accent-color: #ffd700;
+    --accent-glow: rgba(255, 215, 0, 0.4);
+    --card-bg: rgba(45, 27, 78, 0.6);
+    --glass-border: rgba(255, 215, 0, 0.2);
+}
+
+/* Default Dark (Dracula-ish) is in :root, but we can make explicit */
+[data-theme='dark'] {
+    /* Uses root defaults */
+}
+
+/* Ensure the ball transitions and styles are correct */
+.theme-ball {
+    position: absolute;
+    /* or fixed depending on logic */
+    background: var(--accent-color);
+    border-radius: 50%;
+    cursor: grab;
+    z-index: 2000;
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.theme-ball:active {
+    cursor: grabbing;
+}
