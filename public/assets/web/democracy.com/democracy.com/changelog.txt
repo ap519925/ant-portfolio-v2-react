@@ -1,0 +1,12 @@
+Changelog
+
+7/24/18 - Header: Added 15px left padding to .democracy-logo
+7/24/18 - <body> tag: added sitewide default background color
+
+7/25/18 - created user settings page and accompanying css 
+7/25/18 - added .profile-page class to profile <body> tag to override background-color
+
+8/2/18 - Modified h1-h5 color (now #505050) and created custom classes for profile pages (#profile-page h1, #profile-page h3)
+8/2/18 - Edited default button styles, created #profile page .btn. #profile page .btn-primary, #profile page .btn-secondary for profile page buttons
+8/2/18 - First run at account settings (empty/new user state)
+

@@ -111,6 +111,12 @@
     border-radius: 50%;
     cursor: pointer;
     transition: transform 0.2s, opacity 0.2s;
+    display: flex;
+    /* Flex to center icon */
+    align-items: center;
+    justify-content: center;
+    color: rgba(0, 0, 0, 0.5);
+    /* Icon color */
 }
 
 .dot:hover {

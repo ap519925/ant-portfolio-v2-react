@@ -1,27 +1,30 @@
 import React from 'react';
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowRight, ChevronDown, X, Minus, Maximize2 } from 'lucide-react';
 import './Hero.css';
 
+import { useLanguage } from './LanguageContext';
+
 const Hero = () => {
+    const { t } = useLanguage();
+
     return (
         <div className="hero-wrapper">
             <section id="home" className="hero-section">
                 <div className="container hero-container">
                     <div className="hero-content animate-fade-in">
-                        <p className="hero-greeting accent-text">Hello, I'm</p>
+                        <p className="hero-greeting accent-text">{t('hero.greeting') || "Hello, I'm"}</p>
                         <h1 className="hero-name gradient-text">Anthony Phillips<span ref={(el) => window.dotRef = { current: el }}>.</span></h1>
-                        <h2 className="hero-role">Full-Stack Developer & Analyst</h2>
+                        <h2 className="hero-role">{t('hero.role')}</h2>
                         <p className="hero-description">
-                            I craft stylish, high-performance digital experiences. Based in Queens, NYC, I specialize in
-                            full-stack development, technical analysis, and creating seamless user interfaces.
+                            {t('hero.description') || "I craft stylish, high-performance digital experiences. Based in Queens, NYC, I specialize in full-stack development, technical analysis, and creating seamless user interfaces."}
                         </p>
 
                         <div className="hero-buttons">
                             <a href="#work" className="btn btn-primary">
-                                View My Work <ArrowRight size={18} style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
+                                {t('hero.cta')} <ArrowRight size={18} style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
                             </a>
                             <a href="#contact" className="btn">
-                                Contact Me
+                                {t('hero.contact')}
                             </a>
                         </div>
                     </div>
@@ -50,7 +53,7 @@ import { useTheme } from './ThemeContext';
 
 const InteractiveCodeBlock = () => {
     const [windowState, setWindowState] = useState('normal');
-    const { toggleTheme } = useTheme();
+    const { toggleTheme, setTheme } = useTheme();
     const [history, setHistory] = useState([
         { type: 'output', text: 'Welcome to Anthony\'s Terminal v1.0.0' },
         { type: 'output', text: 'Type "help" for a list of commands.' },
@@ -76,20 +79,35 @@ const InteractiveCodeBlock = () => {
 
         switch (command) {
             case 'help':
-                outputText = `Available commands:
-  - help: Show this list
-  - clear: Clear terminal
-  - theme: Toggle theme
-  - party: Celebration time
-  - ls: List directory
-  - cd [dir]: Navigate to section
-  - whoami: About Anthony
-  - joke: Random dev joke
-  - quote: Inspirational quote
-  - time: Current time
-  - pwd: Present working directory
-  - github: Open GitHub
-  - linkedin: Open LinkedIn`;
+                const commands = [
+                    { cmd: 'help', desc: 'Show this list' },
+                    { cmd: 'clear', desc: 'Clear terminal' },
+                    { cmd: 'theme', desc: 'Toggle theme' },
+                    { cmd: 'party', desc: 'Celebration time' },
+                    { cmd: 'ls', desc: 'List directory' },
+                    { cmd: 'ls -a', desc: '???' },
+                    { cmd: 'cd [dir]', desc: 'Navigate to section' },
+                    { cmd: 'music', desc: 'Play a random track 🎵' },
+                    { cmd: 'whoami', desc: 'About Anthony' },
+                    { cmd: 'joke', desc: 'Random dev joke' },
+                    { cmd: 'quote', desc: 'Inspirational quote' },
+                    { cmd: 'time', desc: 'Current time' },
+                    { cmd: 'pwd', desc: 'Present working directory' },
+                    { cmd: 'github', desc: 'Open GitHub' },
+                    { cmd: 'linkedin', desc: 'Open LinkedIn' }
+                ];
+
+                outputText = (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', margin: '10px 0' }}>
+                        <div style={{ marginBottom: '8px', opacity: 0.8 }}>Available commands:</div>
+                        {commands.map((item) => (
+                            <div key={item.cmd} style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center' }}>
+                                <span style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>{item.cmd}</span>
+                                <span style={{ opacity: 0.9 }}>{item.desc}</span>
+                            </div>
+                        ))}
+                    </div>
+                );
                 break;
             case 'clear':
                 setHistory([]);
@@ -98,6 +116,46 @@ const InteractiveCodeBlock = () => {
                 toggleTheme();
                 outputText = 'Theme toggled successfully.';
                 type = 'success-output';
+                break;
+            case 'ls':
+                outputText = 'home    about    work    contact    resume.pdf';
+                break;
+            case 'ls -a':
+            case 'ls -la':
+                setTheme('matrix');
+                outputText = (
+                    <div>
+                        <div style={{ marginBottom: '10px' }}>
+                            home    about    work    contact    resume.pdf    <span style={{ color: '#00ff41', textShadow: '0 0 5px #00ff41' }}>.matrix_config</span>
+                        </div>
+                        <div style={{ color: '#00ff41', fontFamily: 'monospace' }}>
+                            <div>[SYSTEM] Hidden configuration found.</div>
+                            <div>[SYSTEM] Decoding entry...</div>
+                            <div>[SYSTEM] Matrix mode activated.</div>
+                        </div>
+                    </div>
+                );
+                type = 'success-output';
+                break;
+            case 'music':
+                outputText = (
+                    <div style={{ margin: '10px 0' }}>
+                        <iframe
+                            style={{ borderRadius: '12px' }}
+                            src="https://open.spotify.com/embed/playlist/3GWBkCGdj8G3iQ3we1DKwu?utm_source=generator&theme=0"
+                            width="100%"
+                            height="152"
+                            frameBorder="0"
+                            allowFullScreen=""
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            loading="lazy"
+                            title="Spotify Playlist"
+                        ></iframe>
+                        <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '0.75rem', opacity: 0.6 }}>
+                            If the player doesn't load, <a href="https://open.spotify.com/playlist/3GWBkCGdj8G3iQ3we1DKwu" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-color)' }}>open in Spotify</a>
+                        </div>
+                    </div >
+                );
                 break;
             case 'party':
             case 'confetti':
@@ -139,14 +197,12 @@ const InteractiveCodeBlock = () => {
             case 'whoami':
                 outputText = 'Anthony Phillips\nFull-Stack Developer & Analyst based in NYC.';
                 break;
-            case 'ls':
-                outputText = 'home    about    work    contact    resume.pdf';
-                break;
+
             case 'cd':
                 outputText = 'usage: cd [directory]';
                 break;
             case 'github':
-                window.open('https://github.com/AntMan247', '_blank');
+                window.open('https://github.com/ap519925', '_blank');
                 outputText = 'Opening GitHub...';
                 type = 'success-output';
                 break;
@@ -282,9 +338,15 @@ const InteractiveCodeBlock = () => {
                 >
                     <div className="code-block-header" style={{ cursor: 'grab' }}>
                         <div className="window-controls">
-                            <span className="dot red" onClick={(e) => { e.stopPropagation(); handleClose(); }} title="Close"></span>
-                            <span className="dot yellow" onClick={(e) => { e.stopPropagation(); handleMinimize(); }} title="Minimize"></span>
-                            <span className="dot green" onClick={(e) => { e.stopPropagation(); handleMaximize(); }} title="Maximize"></span>
+                            <span className="dot red" onClick={(e) => { e.stopPropagation(); handleClose(); }} title="Close">
+                                <X size={8} strokeWidth={4} />
+                            </span>
+                            <span className="dot yellow" onClick={(e) => { e.stopPropagation(); handleMinimize(); }} title="Minimize">
+                                <Minus size={8} strokeWidth={4} />
+                            </span>
+                            <span className="dot green" onClick={(e) => { e.stopPropagation(); handleMaximize(); }} title="Maximize">
+                                <Maximize2 size={8} strokeWidth={4} />
+                            </span>
                         </div>
                     </div>
 

@@ -3,16 +3,16 @@
 @import './components/Theme.css';
 
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #13131f;
-  --text-primary: #e0e0e0;
-  --text-secondary: #a0a0b0;
-  --accent-color: #6366f1;
-  /* Indigo */
-  --accent-glow: rgba(99, 102, 241, 0.4);
-  --card-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --nav-height: 80px;
+  /* Default Theme: Sunset (Salmon) */
+  --bg-primary: #2a1b3d;
+  --bg-secondary: #44315f;
+  --text-primary: #ffe3e3;
+  --text-secondary: #d4a5a5;
+  --accent-color: #ff6b6b;
+  --accent-glow: rgba(255, 107, 107, 0.4);
+  --card-bg: rgba(68, 49, 95, 0.5);
+  --glass-border: rgba(255, 107, 107, 0.2);
+  --nav-height: 100px;
 }
 
 * {
@@ -153,6 +153,7 @@ ul {
 }
 
 /* Animations */
+/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -165,6 +166,24 @@ ul {
   }
 }
 
+@keyframes floatBlob {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  33% {
+    transform: translate(30px, 50px) rotate(10deg);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) rotate(-5deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.8s ease-out forwards;
 }
@@ -172,24 +191,48 @@ ul {
 /* Background blob */
 .blob {
   position: absolute;
-  width: 500px;
-  height: 500px;
+  width: 600px;
+  height: 600px;
   background: radial-gradient(circle, var(--accent-color) 0%, transparent 70%);
   opacity: 0.15;
   border-radius: 50%;
   filter: blur(80px);
   z-index: -1;
   pointer-events: none;
+  animation: floatBlob 20s infinite ease-in-out alternate;
 }
 
 .blob-top-right {
   top: -200px;
   right: -200px;
+  animation-duration: 25s;
 }
 
 .blob-bottom-left {
   bottom: -200px;
   left: -200px;
+  animation-duration: 30s;
+  animation-direction: alternate-reverse;
+}
+
+/* Noise Texture Overlay */
+/* Noise Texture Overlay - Scoped to container */
+.noise-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  /* Behind content */
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+}
+
+.contact-section {
+  position: relative;
+  overflow: hidden;
 }
 
 /* Section Title - Global Style */

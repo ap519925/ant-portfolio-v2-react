@@ -88,9 +88,7 @@
 }
 
 /* Default Dark (Dracula-ish) is in :root, but we can make explicit */
-[data-theme='dark'] {
-    /* Uses root defaults */
-}
+/* Default Dark uses root defaults */
 
 /* Ensure the ball transitions and styles are correct */
 .theme-ball {
@@ -105,4 +103,70 @@
 
 .theme-ball:active {
     cursor: grabbing;
+}
+
+[data-theme='synthwave'] {
+    --bg-primary: #2b213a;
+    --bg-secondary: #241b35;
+    --text-primary: #fff0f5;
+    --text-secondary: #ff71ce;
+    --accent-color: #b967ff;
+    --accent-glow: rgba(185, 103, 255, 0.5);
+    --card-bg: rgba(43, 33, 58, 0.7);
+    --glass-border: rgba(1, 205, 254, 0.3);
+}
+
+[data-theme='nordic'] {
+    --bg-primary: #2e3440;
+    --bg-secondary: #3b4252;
+    --text-primary: #eceff4;
+    --text-secondary: #88c0d0;
+    --accent-color: #88c0d0;
+    --accent-glow: rgba(136, 192, 208, 0.4);
+    --card-bg: rgba(59, 66, 82, 0.6);
+    --glass-border: rgba(136, 192, 208, 0.2);
+}
+
+[data-theme='earth'] {
+    --bg-primary: #2b2621;
+    --bg-secondary: #3e3730;
+    --text-primary: #f2e8cf;
+    --text-secondary: #a68a64;
+    --accent-color: #bc6c25;
+    --accent-glow: rgba(188, 108, 37, 0.4);
+    --card-bg: rgba(62, 55, 48, 0.6);
+    --glass-border: rgba(166, 138, 100, 0.2);
+}
+
+[data-theme='midnight'] {
+    --bg-primary: #020617;
+    --bg-secondary: #0f172a;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent-color: #6366f1;
+    --accent-glow: rgba(99, 102, 241, 0.4);
+    --card-bg: rgba(15, 23, 42, 0.6);
+    --glass-border: rgba(99, 102, 241, 0.2);
+}
+
+[data-theme='minimal'] {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f4f4f5;
+    --text-primary: #18181b;
+    --text-secondary: #71717a;
+    --accent-color: #18181b;
+    --accent-glow: rgba(24, 24, 27, 0.2);
+    --card-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='candy'] {
+    --bg-primary: #fff0f5;
+    --bg-secondary: #ffe6f0;
+    --text-primary: #5c3a51;
+    --text-secondary: #e6a8d7;
+    --accent-color: #ff91c8;
+    --accent-glow: rgba(255, 145, 200, 0.5);
+    --card-bg: rgba(255, 255, 255, 0.6);
+    --glass-border: rgba(255, 145, 200, 0.3);
 }

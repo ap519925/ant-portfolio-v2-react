@@ -1,0 +1,33 @@
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #1a1a1a;
+    /* Dark background */
+    z-index: 99999;
+    /* Top level */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.loader-svg-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loader-svg {
+    width: 400px;
+    height: auto;
+    overflow: visible;
+}
+
+@media (max-width: 768px) {
+    .loader-svg {
+        width: 250px;
+    }
+}

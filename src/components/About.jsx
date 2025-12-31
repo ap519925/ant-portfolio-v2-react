@@ -174,6 +174,39 @@ const About = () => {
                                 ))}
                             </div>
                         </div>
+
+                        <div className="skills-card card">
+                            <div className="section-header">
+                                <BookOpen size={24} className="accent-text" />
+                                <h3>Education</h3>
+                            </div>
+                            <div className="education-timeline">
+                                {[
+                                    {
+                                        company: "University at Albany, SUNY",
+                                        role: "Graduate Coursework",
+                                        period: "2014 – 2015",
+                                        details: [
+                                            "Major: Information Science (IT Management concentration)",
+                                            "Advanced database systems and information architecture",
+                                            "Project management and systems analysis"
+                                        ]
+                                    },
+                                    {
+                                        company: "University at Albany, SUNY",
+                                        role: "Bachelor of Arts Computer Science",
+                                        period: "2014",
+                                        details: [
+                                            "Major: Information & Computer Science",
+                                            "Minor: Informatics",
+                                            "Focus on software development, database management, and UI design"
+                                        ]
+                                    }
+                                ].map((edu, index) => (
+                                    <TimelineItem key={index} job={edu} index={index} />
+                                ))}
+                            </div>
+                        </div>
                     </motion.div>
                 </div>
 

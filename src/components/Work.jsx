@@ -9,16 +9,27 @@ const Work = () => {
 
     const categories = [
         { name: 'All', icon: Folder },
-        { name: 'Websites', icon: Globe },
+        { name: 'Web', icon: Globe },
         { name: 'Apps', icon: Smartphone },
-        { name: 'GitHub', icon: Github },
-        { name: 'Desktop Apps', icon: Monitor }
+        { name: 'Design', icon: Monitor }
     ];
 
     // Filter projects based on active category
-    const filteredProjects = activeCategory === 'All'
-        ? projects
-        : projects.filter(project => project.category === activeCategory);
+    const filteredProjects = projects.filter(project => {
+        if (activeCategory === 'All') return true;
+
+        const cat = project.category || '';
+        if (activeCategory === 'Web') {
+            return cat.includes('Web') || cat.includes('Drupal') || cat.includes('WordPress');
+        }
+        if (activeCategory === 'Apps') {
+            return cat.includes('App') || cat.includes('AI') || cat.includes('Crypto') || cat.includes('Mobile') || project.tags.includes('App');
+        }
+        if (activeCategory === 'Design') {
+            return cat.includes('Design');
+        }
+        return false;
+    });
 
     return (
         <section id="work" className="section work-section">
@@ -43,10 +54,12 @@ const Work = () => {
                     <div className="section-row">
                         {filteredProjects.map((project) => (
                             <React.Fragment key={project.id}>
-                                <div className="section-col">
+                                <div className="section-col" style={{ '--project-color': project.color }}>
                                     <Link to={`/project/${project.id}`} className="section-link">
                                         <div className="section-in">
                                             <img src={project.image} alt={project.title} />
+                                            {/* Colorful Overlay */}
+                                            <div className="project-overlay"></div>
                                         </div>
                                     </Link>
                                 </div>
@@ -59,7 +72,7 @@ const Work = () => {
                 </div>
 
                 <div className="view-more" style={{ marginTop: '50px', textAlign: 'center' }}>
-                    <a href="https://mtanthony.com/work/" className="btn">View All Projects</a>
+                    <Link to="/projects" className="btn">View All Projects</Link>
                 </div>
             </div>
         </section>

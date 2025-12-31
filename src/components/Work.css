@@ -75,6 +75,25 @@
     transform: scale(1.1) rotate(-3deg);
 }
 
+.project-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--project-color, var(--accent-color));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    mix-blend-mode: multiply;
+    /* Or overlay/soft-light for different effects */
+    pointer-events: none;
+    z-index: 2;
+}
+
+.section-col:hover .project-overlay {
+    opacity: 0.8;
+}
+
 /* Hover Text Reveal */
 .hover-text {
     position: fixed;
