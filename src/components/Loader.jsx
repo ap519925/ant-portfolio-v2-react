@@ -74,9 +74,9 @@ const Loader = ({ finishLoading }) => {
                         }}
                     />
 
-                    {/* Path 2: The "P" Loop/Crossbar (With Left Leg) */}
+                    {/* Path 2: The "P" Loop/Crossbar (Parallel Leg) */}
                     <motion.path
-                        d="M 35 180 L 55 135 L 130 135 C 180 135 180 65 130 65 L 110 65"
+                        d="M 35 180 L 45 135 L 130 135 C 180 135 180 65 130 65 L 110 65"
                         fill="transparent"
                         stroke="#a855f7"
                         strokeWidth="18"
