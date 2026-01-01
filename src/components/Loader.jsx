@@ -57,6 +57,13 @@ const Loader = ({ finishLoading }) => {
         >
             <div className="loader-svg-wrapper">
                 <svg className="loader-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <filter id="ink-texture" x="-20%" y="-20%" width="140%" height="140%">
+                            <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" result="noise" />
+                            <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" />
+                        </filter>
+                    </defs>
+
                     {/* Path 1: The "A" Triangle (Outer Wrapper) */}
                     <motion.path
                         d="M 35 180 L 100 20 L 165 180"
@@ -65,6 +72,7 @@ const Loader = ({ finishLoading }) => {
                         strokeWidth="18"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        filter="url(#ink-texture)"
                         initial={{ pathLength: 0, opacity: 0 }}
                         animate={{ pathLength: 1, opacity: 1 }}
                         transition={{
@@ -82,6 +90,7 @@ const Loader = ({ finishLoading }) => {
                         strokeWidth="18"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        filter="url(#ink-texture)"
                         initial={{ pathLength: 0, opacity: 0 }}
                         animate={{ pathLength: 1, opacity: 1 }}
                         transition={{
