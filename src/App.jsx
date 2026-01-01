@@ -12,10 +12,15 @@ import LiveChat from './components/LiveChat';
 const Home = React.lazy(() => import('./components/Home'));
 const ProjectPage = React.lazy(() => import('./components/ProjectPage'));
 const AllProjectsPage = React.lazy(() => import('./components/AllProjectsPage'));
+const Gallery3D = React.lazy(() => import('./components/Gallery3D'));
+const ExperienceSelector = React.lazy(() => import('./components/ExperienceSelector'));
 
 function App() {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
+
+  // Hidden Navbar/Footer/Chat on specific immersive routes
+  const isImmersive = location.pathname === '/' || location.pathname === '/gallery';
 
   // Smooth scroll behavior correction for anchors
   useEffect(() => {
@@ -46,20 +51,22 @@ function App() {
 
         {!loading && (
           <>
-            <Navbar />
+            {!isImmersive && <Navbar />}
             <main>
               <Suspense fallback={<div style={{ minHeight: '100vh' }}></div>}>
                 <AnimatePresence mode="wait">
                   <Routes location={location} key={location.pathname}>
-                    <Route path="/" element={<Home />} />
+                    <Route path="/" element={<ExperienceSelector />} />
+                    <Route path="/terminal" element={<Home />} />
                     <Route path="/projects" element={<AllProjectsPage />} />
                     <Route path="/project/:id" element={<ProjectPage />} />
+                    <Route path="/gallery" element={<Gallery3D />} />
                   </Routes>
                 </AnimatePresence>
               </Suspense>
             </main>
-            <LiveChat />
-            <Footer />
+            {!isImmersive && <LiveChat />}
+            {!isImmersive && <Footer />}
           </>
         )}
       </div>
