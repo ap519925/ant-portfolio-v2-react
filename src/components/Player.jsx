@@ -1,29 +1,19 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { useFrame, useThree, useGraph } from '@react-three/fiber';
-import { useGLTF, useAnimations } from '@react-three/drei';
+import React, { useRef, useEffect, useState } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { SkeletonUtils } from 'three-stdlib';
 
-// Using ONLY the Run file effectively solves the bone mismatch issues.
-const MODEL_RUN = '/assets/dog-run.glb';
-
-useGLTF.preload(MODEL_RUN);
-
+// DEBUG MODE: Using Box to test crash issue.
+// If this works, the GLB file was the problem.
 export const Player = (props) => {
     const group = useRef();
-    // Load the Run model (Mesh + Animation)
-    const { scene, animations } = useGLTF(MODEL_RUN);
 
-    const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
-    const { nodes } = useGraph(clone);
-
-    const { actions, names } = useAnimations(animations, group);
+    // Simple Box Mesh
+    // No GLTF loading here
 
     const [position, setPosition] = useState([0, 0, 5]);
     const [rotation, setRotation] = useState([0, Math.PI, 0]);
     const moveSpeed = 6;
     const rotateSpeed = 3;
-    const [isMoving, setIsMoving] = useState(false);
     const keys = useRef({ w: false, a: false, s: false, d: false, shift: false });
     const { camera } = useThree();
 
@@ -48,43 +38,14 @@ export const Player = (props) => {
     }, []);
 
     useFrame((state, delta) => {
-        // Logic
-        const { w, s, shift } = keys.current;
-        const moving = w || s;
-
-        if (moving !== isMoving) {
-            setIsMoving(moving);
-            // Play/Stop Animation based on movement
-            // Improve: Identify the Run clip name
-            const actionName = names[0]; // Assume first clip is Run
-            if (actionName) {
-                const action = actions[actionName];
-                if (moving) {
-                    action.reset().fadeIn(0.2).play();
-                    // Speed var?
-                    action.timeScale = shift ? 1.5 : 1.0;
-                } else {
-                    action.fadeOut(0.2);
-                }
-            }
-        }
-
-        // Update TimeScale dynamically
-        if (moving) {
-            const actionName = names[0];
-            if (actionName && actions[actionName]) {
-                actions[actionName].timeScale = shift ? 1.5 : 1.0;
-            }
-        }
-
         if (!group.current) return;
 
         let rotY = rotation[1];
         if (keys.current.a) rotY += rotateSpeed * delta;
         if (keys.current.d) rotY -= rotateSpeed * delta;
 
+        let speed = keys.current.shift ? moveSpeed * 2.0 : moveSpeed;
         let moveX = 0; let moveZ = 0;
-        let speed = (shift) ? moveSpeed * 2.0 : moveSpeed;
 
         if (keys.current.w) {
             moveX += Math.sin(rotY) * speed * delta;
@@ -116,7 +77,10 @@ export const Player = (props) => {
 
     return (
         <group ref={group} {...props} dispose={null}>
-            <primitive object={clone} scale={1.2} />
+            <mesh position={[0, 1, 0]}>
+                <boxGeometry args={[1, 2, 1]} />
+                <meshStandardMaterial color="hotpink" />
+            </mesh>
         </group>
     );
 };
