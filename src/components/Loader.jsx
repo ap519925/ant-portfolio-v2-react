@@ -59,10 +59,10 @@ const Loader = ({ finishLoading }) => {
                 <svg className="loader-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                     {/* Path 1: The "A" Triangle */}
                     <motion.path
-                        d="M 60 180 L 100 20 L 160 180"
+                        d="M 65 180 L 100 20 L 135 180"
                         fill="transparent"
-                        stroke="var(--accent-color)"
-                        strokeWidth="16"
+                        stroke="#a855f7"
+                        strokeWidth="18"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         initial={{ pathLength: 0, opacity: 0 }}
@@ -76,10 +76,10 @@ const Loader = ({ finishLoading }) => {
 
                     {/* Path 2: The "P" Loop/Crossbar */}
                     <motion.path
-                        d="M 30 145 L 125 145 C 175 145 175 85 125 85 L 105 85"
+                        d="M 20 135 L 130 135 C 180 135 180 65 130 65 L 110 65"
                         fill="transparent"
-                        stroke="var(--accent-color)"
-                        strokeWidth="16"
+                        stroke="#a855f7"
+                        strokeWidth="18"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         initial={{ pathLength: 0, opacity: 0 }}
