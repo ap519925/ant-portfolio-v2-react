@@ -201,6 +201,7 @@ const InteractiveCodeBlock = () => {
                 break;
             case 'ls -a':
             case 'ls -la':
+            case 'matrix':
                 setTheme('matrix');
                 outputText = (
                     <div>
@@ -216,6 +217,50 @@ const InteractiveCodeBlock = () => {
                 );
                 type = 'success-output';
                 break;
+            case 'stocks':
+                outputText = (
+                    <div>
+                        <div style={{ marginBottom: '5px', borderBottom: '1px solid var(--text-secondary)', paddingBottom: '2px' }}>📊 Market Watch</div>
+
+                        <div style={{ marginBottom: '8px' }}>
+                            <div style={{ fontSize: '0.9em', color: 'var(--text-secondary)' }}>Top MoversToday:</div>
+                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                <span>🚀 <strong style={{ color: '#00ff41' }}>GME</strong> +12%</span>
+                                <span>🚀 <strong style={{ color: '#00ff41' }}>AMC</strong> +8%</span>
+                                <span>📉 <strong style={{ color: '#ff4d4d' }}>NVDA</strong> -1.2%</span>
+                            </div>
+                        </div>
+
+                        <ul style={{ listStyleType: 'none', paddingLeft: '0' }}>
+                            <li>🪙 <strong style={{ color: '#f7931a' }}>BTC</strong>: $98,420 <span style={{ color: '#00ff41', fontSize: '0.8em' }}>(+4.2%)</span></li>
+                            <li>🐕 <strong style={{ color: '#e6b758' }}>DOGE</strong>: $0.42 <span style={{ color: '#00ff41', fontSize: '0.8em' }}>(+6.9%)</span></li>
+                            <li>🍎 <strong style={{ color: '#ccc' }}>AAPL</strong>: $235.10 <span style={{ color: '#ff4d4d', fontSize: '0.8em' }}>(-0.5%)</span></li>
+                        </ul>
+                        <div style={{ opacity: 0.6, fontSize: '0.8rem', marginTop: '5px' }}>*Data simulated. Not financial advice.*</div>
+                    </div>
+                );
+                break;
+            case 'crump': {
+                const quotes = [
+                    "Just bought the dip! 📉➡️📈",
+                    "Charts are looking bullish on the 4H timeframe.",
+                    "HODL till the moon! 🚀",
+                    "Market makers are trapping bears right now.",
+                    "Remember: Time in the market > Timing the market.",
+                    "Analyzing the MACD crossover... looks like a reversal imminent.",
+                    "Stochastics are oversold. Loading the boat.",
+                    "Volume precedes price. Watch the breakout."
+                ];
+                const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                outputText = (
+                    <div>
+                        <div style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>@DONALD_CRUMP:</div>
+                        <div>"{randomQuote}"</div>
+                        <div style={{ marginTop: '5px', fontSize: '0.8rem' }}><a href="https://stocktwits.com/DONALD_CRUMP" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>View Profile</a></div>
+                    </div>
+                );
+                break;
+            }
             case 'music':
                 outputText = (
                     <div style={{ margin: '10px 0' }}>
@@ -246,7 +291,7 @@ const InteractiveCodeBlock = () => {
                 outputText = 'Party time!';
                 type = 'success-output';
                 break;
-            case 'joke':
+            case 'joke': {
                 const jokes = [
                     "Why do programmers prefer dark mode? Because light attracts bugs!",
                     "How many programmers does it take to change a light bulb? None. It's a hardware problem.",
@@ -257,7 +302,8 @@ const InteractiveCodeBlock = () => {
                 ];
                 outputText = jokes[Math.floor(Math.random() * jokes.length)];
                 break;
-            case 'quote':
+            }
+            case 'quote': {
                 const quotes = [
                     "Code is like humor. When you have to explain it, it's bad. - Cory House",
                     "First, solve the problem. Then, write the code. - John Johnson",
@@ -267,6 +313,7 @@ const InteractiveCodeBlock = () => {
                 outputText = quotes[Math.floor(Math.random() * quotes.length)];
                 type = 'success-output';
                 break;
+            }
             case 'time':
             case 'date':
                 outputText = `Current time: ${new Date().toLocaleTimeString()}\nDate: ${new Date().toLocaleDateString()}`;
