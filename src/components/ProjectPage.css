@@ -210,13 +210,34 @@
         gap: 40px;
     }
 
+    .project-hero {
+        padding-top: 100px;
+        padding-bottom: 40px;
+    }
+
     .project-title-large {
-        font-size: 2.5rem;
+        font-size: 2rem;
     }
 
     .gallery-grid {
         grid-template-columns: 1fr;
         /* Stack on mobile */
+    }
+
+    /* Lightbox Mobile Adjustments */
+    .lightbox-overlay {
+        padding: 10px;
+    }
+
+    .lightbox-close {
+        top: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .lightbox-nav {
+        padding: 10px;
     }
 }
 
