@@ -22,15 +22,6 @@ function App() {
     };
   }, []);
 
-  // Initial Load Timer
-  useEffect(() => {
-    // Simulate loading time
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
   // Lock scroll during loading
   useEffect(() => {
     if (loading) {

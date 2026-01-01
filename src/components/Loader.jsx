@@ -20,30 +20,6 @@ const Loader = ({ finishLoading }) => {
         }
     };
 
-    const pathVariants = {
-        initial: {
-            pathLength: 0,
-            opacity: 0
-        },
-        animate: {
-            pathLength: 1,
-            opacity: 1,
-            transition: {
-                duration: 1.5,
-                ease: "easeInOut"
-            }
-        }
-    };
-
-    // Fill animation after stroke
-    const fillVariants = {
-        initial: { fillOpacity: 0 },
-        animate: {
-            fillOpacity: 1,
-            transition: { delay: 1.5, duration: 0.5 }
-        }
-    };
-
     return (
         <motion.div
             className="loader-overlay"
