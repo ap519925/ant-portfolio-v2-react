@@ -326,3 +326,22 @@
         /* Hide scroll arrow on mobile to save space */
     }
 }
+
+@media (max-width: 500px) {
+    .hero-name {
+        font-size: 2.5rem;
+    }
+
+    .hero-role {
+        font-size: 1.4rem;
+    }
+
+    .hero-visual {
+        margin-top: 10px;
+        height: auto;
+    }
+
+    .code-block-wrapper {
+        height: 250px !important;
+    }
+}

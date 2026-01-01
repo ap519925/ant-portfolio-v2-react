@@ -138,11 +138,24 @@
     .section-col {
         flex: 0 0 100%;
         max-width: 100%;
+        margin-bottom: 30px;
+        /* Separator */
     }
 
-    .hover-text h2 {
-        font-size: 12vw;
+    /* Disable hover dimming on touch */
+    .section-row:hover .section-col {
+        opacity: 1;
     }
+
+    .hover-text {
+        display: none;
+        /* Hide hover text, rely on Project Page details or add text below image */
+    }
+
+    /* Maybe show title below image permanently? 
+       Requires HTML change. For now, rely on image link. 
+       Or make overlay visible always?
+    */
 }
 
 /* Category Filter */
