@@ -78,9 +78,21 @@ const InteractiveCodeBlock = () => {
         let type = 'output';
 
         switch (command) {
+            case 'chat':
+                if (window.openLiveChat) {
+                    window.openLiveChat();
+                    outputText = 'Opening secure communication channel...';
+                    type = 'success-output';
+                } else {
+                    outputText = 'Chat system offline. (Widget not loaded)';
+                    type = 'error-output';
+                }
+                break;
+            case 'start':
             case 'help':
                 const commands = [
                     { cmd: 'help', desc: 'Show this list' },
+                    { cmd: 'chat', desc: 'Live Chat (Tawk.to) 💬' },
                     { cmd: 'games', desc: 'My favorite games 🎮' },
                     { cmd: 'specs', desc: 'My PC Build 🖥️' },
                     { cmd: 'sports', desc: 'Activities I love ⚽' },

@@ -24,6 +24,16 @@ const LiveChat = () => {
             s1.setAttribute('crossorigin', '*');
             s0.parentNode.insertBefore(s1, s0);
         })();
+
+        // Expose open function for Terminal
+        window.openLiveChat = () => {
+            if (window.Tawk_API && window.Tawk_API.maximize) {
+                window.Tawk_API.maximize();
+            } else {
+                console.log("Chat widget loading...");
+            }
+        };
+
     }, []);
 
     return null;
