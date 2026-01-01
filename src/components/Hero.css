@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Sacramento&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;800&display=swap');
+/* Remove old imports if cleaner, but Exo 2 is needed */
 
 .hero-wrapper {
     height: auto;
@@ -37,22 +38,34 @@
 }
 
 .hero-name {
-    font-family: 'Sacramento', cursive;
-    font-size: 9rem;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 6rem;
     line-height: 1.1;
     margin-bottom: 25px;
-    font-weight: 400;
-    letter-spacing: 0;
-    text-transform: none !important;
-    white-space: nowrap;
-    display: inline-block;
+    font-weight: 800;
+    letter-spacing: -2px;
+    text-transform: none;
     color: #ffffff;
+    display: block;
 
-    /* Animation */
-    clip-path: inset(0 100% 0 0);
-    animation: signatureWipe 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+    /* Animation: Cinematic Blur Reveal */
+    opacity: 0;
+    animation: blurReveal 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
     animation-delay: 2.8s;
-    /* Wait for Loader (2.5s) */
+}
+
+@keyframes blurReveal {
+    0% {
+        filter: blur(20px);
+        opacity: 0;
+        transform: translateY(30px) scale(0.9);
+    }
+
+    100% {
+        filter: blur(0);
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .hero-role {
