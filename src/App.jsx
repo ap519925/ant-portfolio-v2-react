@@ -9,6 +9,7 @@ import AllProjectsPage from './components/AllProjectsPage';
 import { LanguageProvider } from './components/LanguageContext';
 import Loader from './components/Loader';
 import ThemeBall from './components/ThemeBall';
+import LiveChat from './components/LiveChat';
 
 function App() {
   const location = useLocation();
@@ -53,6 +54,7 @@ function App() {
                 </Routes>
               </AnimatePresence>
             </main>
+            <LiveChat />
             <Footer />
           </>
         )}
