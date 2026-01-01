@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Allura&display=swap');
 
 .hero-wrapper {
-    height: 150vh;
+    height: auto;
     position: relative;
     z-index: 1;
 }
@@ -11,8 +11,7 @@
     height: 100vh;
     display: flex;
     align-items: flex-start;
-    position: sticky;
-    top: 0;
+    position: relative;
     padding-top: 180px;
     overflow: hidden;
 }
