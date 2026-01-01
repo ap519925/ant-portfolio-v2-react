@@ -4,7 +4,7 @@ import { useGLTF, useAnimations, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 
 // Asset Path
-const MODEL_PATH = '/assets/Meshy_AI_Business_Pup_0101193126_texture.glb';
+const MODEL_PATH = '/assets/poodle-suit.glb';
 
 export const Player = (props) => {
     const group = useRef();
