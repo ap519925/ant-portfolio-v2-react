@@ -57,9 +57,9 @@ const Loader = ({ finishLoading }) => {
         >
             <div className="loader-svg-wrapper">
                 <svg className="loader-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                    {/* Path 1: The "A" Triangle */}
+                    {/* Path 1: The "A" Triangle (Outer Wrapper) */}
                     <motion.path
-                        d="M 65 180 L 100 20 L 135 180"
+                        d="M 35 180 L 100 20 L 165 180"
                         fill="transparent"
                         stroke="#a855f7"
                         strokeWidth="18"
@@ -74,9 +74,9 @@ const Loader = ({ finishLoading }) => {
                         }}
                     />
 
-                    {/* Path 2: The "P" Loop/Crossbar (Parallel Leg) */}
+                    {/* Path 2: The "P" Loop/Crossbar (Inner Leg) */}
                     <motion.path
-                        d="M 35 180 L 45 135 L 130 135 C 180 135 180 65 130 65 L 110 65"
+                        d="M 65 180 L 75 135 L 135 135 C 185 135 185 65 135 65 L 115 65"
                         fill="transparent"
                         stroke="#a855f7"
                         strokeWidth="18"
