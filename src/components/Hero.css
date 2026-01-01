@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Allura&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sacramento&display=swap');
 
 .hero-wrapper {
     height: auto;
@@ -37,18 +37,16 @@
 }
 
 .hero-name {
-    font-family: 'Allura', cursive;
-    font-size: 8rem;
+    font-family: 'Sacramento', cursive;
+    font-size: 9rem;
     line-height: 1.1;
     margin-bottom: 25px;
     font-weight: 400;
-    /* Allura doesn't have 700 usually */
-    letter-spacing: 1px;
+    letter-spacing: 0;
     text-transform: none !important;
     white-space: nowrap;
     display: inline-block;
     color: #ffffff;
-    /* Explicit white, overridable by gradient if needed, but signatures often better solid or subtle gradient */
 
     /* Animation */
     clip-path: inset(0 100% 0 0);
