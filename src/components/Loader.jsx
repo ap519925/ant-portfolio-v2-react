@@ -94,19 +94,6 @@ const Loader = ({ finishLoading }) => {
                     </svg>
                 </div>
 
-                {/* Text Animation: Signature Wipe */}
-                <motion.h1
-                    className="loader-title"
-                    initial={{ clipPath: "inset(0 100% 0 0)", opacity: 0 }}
-                    animate={{ clipPath: "inset(0 0 0 0)", opacity: 1 }}
-                    transition={{
-                        duration: 1.5,
-                        ease: "easeOut",
-                        delay: 1.5
-                    }}
-                >
-                    Anthony Phillips
-                </motion.h1>
             </div>
         </motion.div>
     );
