@@ -3,17 +3,9 @@ import { useEffect } from 'react';
 const LiveChat = () => {
     useEffect(() => {
         // Tawk.to Script
-        // Replace 'YOUR_PROPERTY_ID' with your actual ID from dashboard.tawk.to
-        // You can find this in Administration -> Widget Code
-
-        // Example ID placeholder:
-        const PROPERTY_ID = 'YOUR_PROPERTY_ID';
-        const WIDGET_ID = 'default';
-
-        if (PROPERTY_ID === 'YOUR_PROPERTY_ID') {
-            console.warn("LiveChat: Please update components/LiveChat.jsx with your Tawk.to Property ID.");
-            return;
-        }
+        // User provided IDs
+        const PROPERTY_ID = '6956784e562358197db4764f';
+        const WIDGET_ID = '1jdssbsu1';
 
         var Tawk_API = window.Tawk_API || {}, Tawk_LoadStart = new Date();
         (function () {
