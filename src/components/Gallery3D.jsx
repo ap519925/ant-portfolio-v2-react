@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Environment, Stars } from '@react-three/drei';
 import { useNavigate } from 'react-router-dom';
 import Player from './Player';
 
@@ -25,12 +24,10 @@ const Floor = () => {
 
 const Painting = ({ position, rotation, color, label, id, navigate }) => {
     const [hovered, setHover] = useState(false);
-
     return (
         <group position={position} rotation={rotation}>
             {/* Spotlight */}
             <spotLight position={[0, 3, 2]} intensity={5} angle={0.5} penumbra={1} castShadow />
-
             {/* Frame */}
             <mesh position={[0, 1.5, 0.1]}>
                 <boxGeometry args={[3.2, 2.2, 0.2]} />
@@ -73,8 +70,9 @@ const GalleryScene = () => {
             </div>
 
             <Canvas shadows>
-                <ambientLight intensity={0.4} />
-                <pointLight position={[0, 10, 0]} intensity={0.5} />
+                {/* Simplified Lighting - No Environment/Stars */}
+                <ambientLight intensity={0.8} />
+                <directionalLight position={[5, 10, 5]} intensity={1.5} castShadow />
 
                 {/* The Player (Third Person) */}
                 <Player position={[0, 0, 8]} />
@@ -87,35 +85,11 @@ const GalleryScene = () => {
                 <Wall position={[0, 2.5, 10]} width={20} height={10} /> {/* Front / Entry */}
 
                 {/* Exhibits */}
-                <Painting
-                    position={[0, 0, -9.5]}
-                    color="cyan"
-                    label="Project 1"
-                    id="1"
-                    navigate={navigate}
-                />
-                <Painting
-                    position={[-9.5, 0, 0]}
-                    rotation={[0, Math.PI / 2, 0]}
-                    color="purple"
-                    label="Project 2"
-                    id="2"
-                    navigate={navigate}
-                />
-                <Painting
-                    position={[9.5, 0, 0]}
-                    rotation={[0, -Math.PI / 2, 0]}
-                    color="orange"
-                    label="Project 3"
-                    id="3"
-                    navigate={navigate}
-                />
-
-                <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-                <Environment preset="city" />
+                <Painting position={[0, 0, -9.5]} color="cyan" label="Project 1" id="1" navigate={navigate} />
+                <Painting position={[-9.5, 0, 0]} rotation={[0, Math.PI / 2, 0]} color="purple" label="Project 2" id="2" navigate={navigate} />
+                <Painting position={[9.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} color="orange" label="Project 3" id="3" navigate={navigate} />
             </Canvas>
 
-            {/* Exit Button */}
             <button
                 style={{
                     position: 'absolute', top: 20, right: 20, zIndex: 20,
