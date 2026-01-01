@@ -4,43 +4,28 @@ import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { SkeletonUtils } from 'three-stdlib';
 
+// Asset Paths (Optimized files ~2.5MB each)
 const MODEL_MAIN = '/assets/dog-suit.glb';
 const MODEL_RUN = '/assets/dog-run.glb';
 const MODEL_WALK = '/assets/dog-walk.glb';
 const MODEL_SCARED = '/assets/dog-scared.glb';
 
+// Preload assets to avoid popping
+useGLTF.preload(MODEL_MAIN);
+useGLTF.preload(MODEL_RUN);
+useGLTF.preload(MODEL_WALK);
+useGLTF.preload(MODEL_SCARED);
+
 export const Player = (props) => {
     const group = useRef();
+    const { scene } = useGLTF(MODEL_MAIN);
 
-    // Load Main Model
-    const { scene, animations: mainAnims } = useGLTF(MODEL_MAIN);
+    // Load Animations
+    const { animations: runAnims } = useGLTF(MODEL_RUN);
+    const { animations: walkAnims } = useGLTF(MODEL_WALK);
+    const { animations: scaredAnims } = useGLTF(MODEL_SCARED);
 
-    // Load Aux Animations (Try to be lightweight)
-    const { animations: runAnims, scene: runScene } = useGLTF(MODEL_RUN);
-    const { animations: walkAnims, scene: walkScene } = useGLTF(MODEL_WALK);
-    const { animations: scaredAnims, scene: scaredScene } = useGLTF(MODEL_SCARED);
-
-    // Memory Cleanup: Dispose of geometry from animation-only files immediately
-    useEffect(() => {
-        const cleanup = (sc) => {
-            sc?.traverse((o) => {
-                if (o.isMesh) {
-                    o.geometry.dispose();
-                    if (o.material.isMaterial) o.material.dispose();
-                }
-            });
-        };
-        cleanup(runScene);
-        cleanup(walkScene);
-        cleanup(scaredScene);
-
-        // Clear from cache to free VRAM
-        useGLTF.clear(MODEL_RUN);
-        useGLTF.clear(MODEL_WALK);
-        useGLTF.clear(MODEL_SCARED);
-    }, [runScene, walkScene, scaredScene]);
-
-    // Clone Scene
+    // Clone the main scene for this instance
     const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
     const { nodes } = useGraph(clone);
 
@@ -59,17 +44,11 @@ export const Player = (props) => {
         }
         if (scaredAnims.length) {
             const clip = scaredAnims[0].clone();
-            clip.name = 'Scared';
+            clip.name = 'Idle'; // Use Scared as Idle
             anims.push(clip);
         }
-        // Fallback
-        if (mainAnims.length) {
-            mainAnims.forEach(clip => {
-                if (!anims.find(a => a.name === clip.name)) anims.push(clip);
-            });
-        }
         return anims;
-    }, [runAnims, walkAnims, scaredAnims, mainAnims]);
+    }, [runAnims, walkAnims, scaredAnims]);
 
     const { actions } = useAnimations(animations, group);
 
@@ -78,28 +57,21 @@ export const Player = (props) => {
     const [rotation, setRotation] = useState([0, Math.PI, 0]);
     const moveSpeed = 6;
     const rotateSpeed = 3;
-    const [moveState, setMoveState] = useState('idle');
+    const [moveState, setMoveState] = useState('Idle');
     const keys = useRef({ w: false, a: false, s: false, d: false, shift: false });
     const { camera } = useThree();
 
-    // Input Listeners
+    // Key Listeners
     useEffect(() => {
         const handleDown = (e) => {
             const k = e.key.toLowerCase();
             if (keys.current[k] !== undefined) keys.current[k] = true;
             if (e.key === 'Shift') keys.current.shift = true;
-            updateState();
         };
         const handleUp = (e) => {
             const k = e.key.toLowerCase();
             if (keys.current[k] !== undefined) keys.current[k] = false;
             if (e.key === 'Shift') keys.current.shift = false;
-            updateState();
-        };
-        const updateState = () => {
-            const { w, s, shift } = keys.current;
-            if (w || s) setMoveState(shift ? 'run' : 'walk');
-            else setMoveState('idle');
         };
         window.addEventListener('keydown', handleDown);
         window.addEventListener('keyup', handleUp);
@@ -109,29 +81,28 @@ export const Player = (props) => {
         };
     }, []);
 
-    // Animation Transitions
-    useEffect(() => {
-        // Fallback checks
-        const runAction = actions['Run'];
-        const walkAction = actions['Walk'];
-        const idleAction = actions['Scared'] || actions[Object.keys(actions)[0]]; // Fallback to first
-
-        if (moveState === 'walk') {
-            runAction?.fadeOut(0.2);
-            idleAction?.fadeOut(0.2);
-            walkAction?.reset().fadeIn(0.2).play();
-        } else if (moveState === 'run') {
-            walkAction?.fadeOut(0.2);
-            idleAction?.fadeOut(0.2);
-            runAction?.reset().fadeIn(0.2).play();
-        } else {
-            walkAction?.fadeOut(0.2);
-            runAction?.fadeOut(0.2);
-            idleAction?.reset().fadeIn(0.2).play();
-        }
-    }, [moveState, actions]);
-
+    // Frame Loop (Logic + Animation Update)
     useFrame((state, delta) => {
+        // Determine intended state based on KEYS (every frame check is safer than event listener for continuous transitions)
+        const { w, s, shift } = keys.current;
+        let nextState = 'Idle';
+        if (w || s) {
+            nextState = shift ? 'Run' : 'Walk';
+        }
+
+        if (nextState !== moveState) {
+            // Transition
+            const currentAction = actions[moveState];
+            const nextAction = actions[nextState];
+
+            if (nextAction) {
+                currentAction?.fadeOut(0.2);
+                nextAction?.reset().fadeIn(0.2).play();
+                setMoveState(nextState);
+            }
+        }
+
+        // --- Movement Logic ---
         if (!group.current) return;
 
         let rotY = rotation[1];
@@ -139,7 +110,7 @@ export const Player = (props) => {
         if (keys.current.d) rotY -= rotateSpeed * delta;
 
         let moveX = 0; let moveZ = 0;
-        let speed = keys.current.shift ? moveSpeed * 2.0 : moveSpeed;
+        let speed = (moveState === 'Run') ? moveSpeed * 2.0 : moveSpeed;
 
         if (keys.current.w) {
             moveX += Math.sin(rotY) * speed * delta;
@@ -151,6 +122,7 @@ export const Player = (props) => {
         }
 
         const newPos = [position[0] + moveX, position[1], position[2] + moveZ];
+        // Boundary
         if (Math.abs(newPos[0]) > 9.5) newPos[0] = position[0];
         if (Math.abs(newPos[2]) > 9.5) newPos[2] = position[2];
 
@@ -160,7 +132,9 @@ export const Player = (props) => {
         group.current.position.set(newPos[0], newPos[1], newPos[2]);
         group.current.rotation.set(0, rotY, 0);
 
-        const camDist = 5; const camHeight = 3;
+        // Camera Follow
+        const camDist = 5;
+        const camHeight = 3;
         const targetCamX = newPos[0] - Math.sin(rotY) * camDist;
         const targetCamZ = newPos[2] - Math.cos(rotY) * camDist;
 
@@ -168,14 +142,16 @@ export const Player = (props) => {
         camera.lookAt(newPos[0], 1.5, newPos[2]);
     });
 
+    useEffect(() => {
+        // Init Idle animation
+        if (actions['Idle']) actions['Idle'].play();
+    }, [actions]);
+
     return (
         <group ref={group} {...props} dispose={null}>
             <primitive object={clone} scale={1.2} />
         </group>
     );
 };
-
-// Preload ONLY Main to save memory
-useGLTF.preload(MODEL_MAIN);
 
 export default Player;
