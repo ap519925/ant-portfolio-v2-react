@@ -102,6 +102,9 @@
     display: none;
     cursor: pointer;
     color: var(--text-primary);
+    position: relative;
+    z-index: 1100;
+    /* Ensure above mobile menu */
 }
 
 .social-links-mobile {
