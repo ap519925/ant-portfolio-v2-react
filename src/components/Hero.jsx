@@ -81,18 +81,16 @@ const InteractiveCodeBlock = () => {
             case 'help':
                 const commands = [
                     { cmd: 'help', desc: 'Show this list' },
-                    { cmd: 'clear', desc: 'Clear terminal' },
-                    { cmd: 'theme', desc: 'Toggle theme' },
-                    { cmd: 'party', desc: 'Celebration time' },
-                    { cmd: 'ls', desc: 'List directory' },
-                    { cmd: 'ls -a', desc: '???' },
-                    { cmd: 'cd [dir]', desc: 'Navigate to section' },
+                    { cmd: 'games', desc: 'My favorite games 🎮' },
+                    { cmd: 'specs', desc: 'My PC Build 🖥️' },
+                    { cmd: 'sports', desc: 'Activities I love ⚽' },
+                    { cmd: 'chinese', desc: 'Mandarin skills 🇨🇳' },
+                    { cmd: 'sing', desc: 'Karaoke time 🎤' },
                     { cmd: 'music', desc: 'Play a random track 🎵' },
+                    { cmd: 'theme', desc: 'Toggle theme 🎨' },
+                    { cmd: 'party', desc: 'Celebration time 🎉' },
                     { cmd: 'whoami', desc: 'About Anthony' },
-                    { cmd: 'joke', desc: 'Random dev joke' },
-                    { cmd: 'quote', desc: 'Inspirational quote' },
-                    { cmd: 'time', desc: 'Current time' },
-                    { cmd: 'pwd', desc: 'Present working directory' },
+                    { cmd: 'clear', desc: 'Clear terminal' },
                     { cmd: 'github', desc: 'Open GitHub' },
                     { cmd: 'linkedin', desc: 'Open LinkedIn' }
                 ];
@@ -115,6 +113,75 @@ const InteractiveCodeBlock = () => {
             case 'theme':
                 toggleTheme();
                 outputText = 'Theme toggled successfully.';
+                type = 'success-output';
+                break;
+            case 'games':
+                outputText = (
+                    <div>
+                        <div style={{ marginBottom: '5px' }}>Top Games in Rotation:</div>
+                        <ul style={{ listStyleType: 'none', paddingLeft: '10px', color: 'var(--text-secondary)' }}>
+                            <li>🔵 <strong style={{ color: '#fff' }}>Halo</strong> - "Wake me when you need me."</li>
+                            <li>🪂 <strong style={{ color: '#fff' }}>PUBG</strong> - "Winner Winner Chicken Dinner!"</li>
+                            <li>⚔️ <strong style={{ color: '#fff' }}>Valorant</strong> - Jett/Omen Main.</li>
+                        </ul>
+                    </div>
+                );
+                break;
+            case 'halo':
+                outputText = 'Spartan-117 reporting for duty. Shields rechargeable. MJOLNIR Armor systems nominal.';
+                type = 'success-output';
+                break;
+            case 'pubg':
+                outputText = 'Better luck next time! 🍳';
+                break;
+            case 'valorant':
+                outputText = 'ACE! 🔫🔫🔫🔫🔫';
+                type = 'success-output';
+                break;
+            case 'specs':
+            case 'build':
+                outputText = (
+                    <div>
+                        <div style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>System Specifications:</div>
+                        <div>CPU: 12th Gen Intel® Core™ i9-12900K</div>
+                        <div>GPU: Intel® Arc™ A770LE 16GB</div>
+                        <div>RAM: 64GB DDR5</div>
+                        <div>Storage: 4TB NVMe SSD</div>
+                        <div>Case: Lian Li O11 Dynamic</div>
+                        <div style={{ marginTop: '5px', fontStyle: 'italic', opacity: 0.7 }}>"Powered by Team Blue."</div>
+                    </div>
+                );
+                break;
+            case 'sports':
+                outputText = '⚽ Soccer (Midfielder) | 🎾 Tennis (Nadal fan?) | 🏀 Basketball (Shooting Guard)';
+                break;
+            case 'chinese':
+            case 'mandarin':
+                outputText = (
+                    <div>
+                        <div>你好! (Nǐ hǎo!)</div>
+                        <div>我叫 Anthony. 很高兴认识你.</div>
+                        <div style={{ opacity: 0.7 }}>(Hello! My name is Anthony. Nice to meet you.)</div>
+                    </div>
+                );
+                break;
+            case 'sing':
+                outputText = (
+                    <div>
+                        <div>🎤 <span style={{ fontStyle: 'italic' }}>"月亮代表我的心..." (The Moon Represents My Heart)</span></div>
+                        <div style={{ marginTop: '5px' }}>🎤 <span style={{ fontStyle: 'italic' }}>"Never gonna give you up, never gonna let you down..."</span></div>
+                    </div>
+                );
+                break;
+            case 'sudo':
+                outputText = 'Permission denied: User is not in the sudoers file. This incident will be reported.';
+                type = 'error-output';
+                break;
+            case 'ping':
+                outputText = 'Pong! 🏓 (Latency: 1ms)';
+                break;
+            case 'coffee':
+                outputText = '☕ Brewing java... [██████████] 100% Done.';
                 type = 'success-output';
                 break;
             case 'ls':
@@ -189,6 +256,7 @@ const InteractiveCodeBlock = () => {
                 type = 'success-output';
                 break;
             case 'time':
+            case 'date':
                 outputText = `Current time: ${new Date().toLocaleTimeString()}\nDate: ${new Date().toLocaleDateString()}`;
                 break;
             case 'pwd':
@@ -197,7 +265,6 @@ const InteractiveCodeBlock = () => {
             case 'whoami':
                 outputText = 'Anthony Phillips\nFull-Stack Developer & Analyst based in NYC.';
                 break;
-
             case 'cd':
                 outputText = 'usage: cd [directory]';
                 break;

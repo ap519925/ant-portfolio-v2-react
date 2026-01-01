@@ -40,7 +40,6 @@ const Contact = () => {
 
     return (
         <section id="contact" className="section contact-section">
-            <div className="noise-overlay"></div>
 
             {/* 3D Floating Shapes Background */}
             <div className="shape-3d shape-1"></div>
