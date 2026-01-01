@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Allura&display=swap');
 
 .hero-wrapper {
     height: 150vh;
@@ -38,12 +38,13 @@
 }
 
 .hero-name {
-    font-family: 'Dancing Script', cursive;
-    font-size: 7rem;
+    font-family: 'Allura', cursive;
+    font-size: 8rem;
     line-height: 1.1;
     margin-bottom: 25px;
-    font-weight: 700;
-    letter-spacing: 0;
+    font-weight: 400;
+    /* Allura doesn't have 700 usually */
+    letter-spacing: 1px;
     text-transform: none !important;
     white-space: nowrap;
     display: inline-block;
