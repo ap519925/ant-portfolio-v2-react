@@ -55,43 +55,58 @@ const Loader = ({ finishLoading }) => {
                 setTimeout(finishLoading, 2500);
             }}
         >
-            <div className="loader-svg-wrapper">
-                <svg className="loader-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <div className="loader-content">
+                <div className="loader-svg-wrapper">
+                    <svg className="loader-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        {/* Path 1: The "A" Triangle (Outer Wrapper) */}
+                        <motion.path
+                            d="M 35 180 L 100 20 L 165 180"
+                            fill="transparent"
+                            stroke="#a855f7"
+                            strokeWidth="18"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            animate={{ pathLength: 1, opacity: 1 }}
+                            transition={{
+                                duration: 0.8,
+                                ease: "easeInOut",
+                                delay: 0.2
+                            }}
+                        />
 
-                    {/* Path 1: The "A" Triangle (Outer Wrapper) */}
-                    <motion.path
-                        d="M 35 180 L 100 20 L 165 180"
-                        fill="transparent"
-                        stroke="#a855f7"
-                        strokeWidth="18"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 1 }}
-                        transition={{
-                            duration: 0.8,
-                            ease: "easeInOut",
-                            delay: 0.2
-                        }}
-                    />
+                        {/* Path 2: The "P" Loop inside (Inner Leg + Closed Loop) - Slanted Parallel */}
+                        <motion.path
+                            d="M 65 180 L 83 135 L 135 135 C 185 135 185 65 135 65 L 100 65 L 83 135"
+                            fill="transparent"
+                            stroke="#a855f7"
+                            strokeWidth="18"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            animate={{ pathLength: 1, opacity: 1 }}
+                            transition={{
+                                duration: 0.9,
+                                ease: "easeInOut",
+                                delay: 1.0
+                            }}
+                        />
+                    </svg>
+                </div>
 
-                    {/* Path 2: The "P" Loop inside (Inner Leg + Closed Loop) - Slanted Parallel */}
-                    <motion.path
-                        d="M 65 180 L 83 135 L 135 135 C 185 135 185 65 135 65 L 100 65 L 83 135"
-                        fill="transparent"
-                        stroke="#a855f7"
-                        strokeWidth="18"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 1 }}
-                        transition={{
-                            duration: 0.9,
-                            ease: "easeInOut",
-                            delay: 1.0
-                        }}
-                    />
-                </svg>
+                {/* Text Animation: Signature Wipe */}
+                <motion.h1
+                    className="loader-title"
+                    initial={{ clipPath: "inset(0 100% 0 0)", opacity: 0 }}
+                    animate={{ clipPath: "inset(0 0 0 0)", opacity: 1 }}
+                    transition={{
+                        duration: 1.5,
+                        ease: "easeOut",
+                        delay: 1.5
+                    }}
+                >
+                    Anthony Phillips
+                </motion.h1>
             </div>
         </motion.div>
     );
