@@ -1,10 +1,11 @@
-import React, { useRef, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { Float } from '@react-three/drei';
+import React, { useRef, useState, useMemo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { Float, Sparkles } from '@react-three/drei'; // No sky for now
 import { useNavigate } from 'react-router-dom';
 import Player from './Player';
+import * as THREE from 'three';
 
-// --- STRIPPED DOWN SCENE (No Environment/Sky/Fog/Sparkles) ---
+// --- VISUAL ASSETS ---
 
 const Wall = (props) => {
     return (
@@ -18,17 +19,58 @@ const Wall = (props) => {
 const DreamFloor = () => {
     return (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]}>
-            <planeGeometry args={[100, 100]} />
+            <planeGeometry args={[500, 500]} />
             <meshStandardMaterial color="#eecbf2" />
-            <gridHelper args={[100, 20]} />
+            <gridHelper args={[500, 50, '#ffffff', '#eecbf2']} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} />
         </mesh>
     );
 };
 
-// ... Collectibles code (Logic only) ...
-import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
+// --- PROCEDURAL HOUSES (Low Poly) ---
+const House = ({ position, rotation }) => {
+    const color = useMemo(() => {
+        const colors = ['#ffb7b2', '#ffdac1', '#e2f0cb', '#b5ead7', '#c7ceea'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }, []);
 
+    return (
+        <group position={position} rotation={rotation}>
+            {/* Base */}
+            <mesh position={[0, 1, 0]}>
+                <boxGeometry args={[2, 2, 2]} />
+                <meshStandardMaterial color="#fff" />
+            </mesh>
+            {/* Roof */}
+            <mesh position={[0, 2.5, 0]} rotation={[0, Math.PI / 4, 0]}>
+                <coneGeometry args={[1.8, 1.5, 4]} />
+                <meshStandardMaterial color={color} />
+            </mesh>
+            {/* Door */}
+            <mesh position={[0, 0.75, 1.01]}>
+                <planeGeometry args={[0.8, 1.5]} />
+                <meshStandardMaterial color="#333" />
+            </mesh>
+        </group>
+    );
+};
+
+const Village = () => {
+    const houses = useMemo(() => {
+        const h = [];
+        for (let i = 0; i < 15; i++) {
+            const angle = (i / 15) * Math.PI * 2;
+            const radius = 20 + Math.random() * 10;
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+            h.push(<House key={i} position={[x, 0, z]} rotation={[0, -angle + Math.PI / 2, 0]} />);
+        }
+        return h;
+    }, []);
+    return <group>{houses}</group>;
+};
+
+
+// ... Collectibles code ...
 const Collectible = ({ position, color, type, onCollect }) => {
     const ref = useRef();
     const [active, setActive] = useState(true);
@@ -44,19 +86,19 @@ const Collectible = ({ position, color, type, onCollect }) => {
                 {type === 'code' && (
                     <mesh rotation={[0.5, 0.5, 0]}>
                         <boxGeometry args={[0.5, 0.5, 0.5]} />
-                        <meshStandardMaterial color="#00ff00" />
+                        <meshStandardMaterial color="lime" />
                     </mesh>
                 )}
                 {type === 'art' && (
                     <mesh>
                         <torusGeometry args={[0.3, 0.1, 16, 32]} />
-                        <meshStandardMaterial color="#ff00ff" />
+                        <meshStandardMaterial color="magenta" />
                     </mesh>
                 )}
                 {type === 'lang' && (
                     <mesh>
                         <sphereGeometry args={[0.3, 16, 16]} />
-                        <meshStandardMaterial color="#00ffff" />
+                        <meshStandardMaterial color="cyan" />
                     </mesh>
                 )}
             </Float>
@@ -71,6 +113,9 @@ const CollectiblesManager = ({ playerRef, setScore }) => {
         { id: 3, pos: [0, 1, 15], type: 'lang', color: 'cyan' },
         { id: 4, pos: [10, 1, -5], type: 'code', color: 'lime' },
         { id: 5, pos: [-10, 1, -5], type: 'art', color: 'magenta' },
+        // More items in the village
+        { id: 6, pos: [20, 1, 0], type: 'lang', color: 'cyan' },
+        { id: 7, pos: [-20, 1, 10], type: 'code', color: 'lime' },
     ]);
     const [collected, setCollected] = useState([]);
     useFrame(() => {
@@ -80,6 +125,7 @@ const CollectiblesManager = ({ playerRef, setScore }) => {
             if (collected.includes(item.id)) return;
             const dx = playerPos.x - item.pos[0];
             const dz = playerPos.z - item.pos[2];
+            // Check Y too (must jump?) - Optional
             if (Math.sqrt(dx * dx + dz * dz) < 1.5) {
                 setCollected(prev => [...prev, item.id]);
                 setScore(s => s + 1);
@@ -106,26 +152,27 @@ const GalleryScene = () => {
                 position: 'absolute', bottom: 30, left: 30, color: 'rgba(100,100,100,0.8)', zIndex: 10,
                 fontFamily: 'Exo 2', pointerEvents: 'none'
             }}>
-                <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>SIMPLE MODE (NO ENV)</div>
-                <div>Collected: {score} / 5</div>
+                <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>VILLAGE MODE</div>
+                <div>Collected: {score}</div>
             </div>
 
             <Canvas camera={{ position: [0, 5, 12], fov: 60 }} gl={{ antialias: true }}>
-                {/* SOLID BACKGROUND INSTEAD OF SKY/ENV */}
                 <color attach="background" args={['#ffe4e1']} />
 
-                {/* Lighting - Basic */}
+                {/* Basic Lighting */}
                 <ambientLight intensity={1.0} color="#fff" />
                 <directionalLight position={[10, 20, 10]} intensity={1.5} color="#fff" />
 
-                {/* REMOVED: Sky, Environment, Fog, Sparkles */}
+                {/* Re-enable Sparkles (Safe) */}
+                <Sparkles count={50} scale={40} size={5} speed={0.4} opacity={0.5} color="#fff" />
 
                 <Player ref={playerRef} position={[0, 0, 8]} />
                 <CollectiblesManager playerRef={playerRef} setScore={setScore} />
 
                 <DreamFloor />
+                <Village />
 
-                {/* Building */}
+                {/* Central Hall */}
                 <group position={[0, 0, 0]}>
                     <Wall position={[0, 2.5, -10]} width={20} height={10} />
                     <Wall position={[-10, 2.5, 0]} rotation={[0, Math.PI / 2, 0]} width={20} height={10} />
