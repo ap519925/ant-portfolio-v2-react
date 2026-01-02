@@ -1,7 +1,7 @@
 import React, { useRef, useState, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Environment, Sky, Cloud, Sparkles, Float } from '@react-three/drei';
-import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing';
+// import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing'; // DISABLED FOR DEBUG
 import { useNavigate } from 'react-router-dom';
 import Player from './Player';
 
@@ -117,8 +117,6 @@ const GalleryScene = () => {
                 {/* Fog */}
                 <fog attach="fog" args={['#eecbf2', 10, 80]} />
 
-                {/* Removed SoftShadows - Causing Shader Error */}
-
                 {/* Lighting */}
                 <ambientLight intensity={0.6} color="#ffe4e1" />
                 <directionalLight
@@ -155,12 +153,12 @@ const GalleryScene = () => {
                     <Painting position={[9.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} color="#ffa07a" label="Project 3" id="3" navigate={navigate} />
                 </group>
 
-                {/* Post Processing */}
-                <EffectComposer disableNormalPass>
+                {/* Post Processing DISABLED for Debug */}
+                {/* <EffectComposer disableNormalPass>
                     <Bloom luminanceThreshold={0.8} intensity={1.2} levels={9} mipmapBlur />
-                    <Noise opacity={0.05} />
+                    <Noise opacity={0.05} /> 
                     <Vignette eskil={false} offset={0.1} darkness={0.4} />
-                </EffectComposer>
+                </EffectComposer> */}
 
             </Canvas>
 
