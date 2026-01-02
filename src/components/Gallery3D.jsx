@@ -109,9 +109,9 @@ const DogGuide = ({ active, playerPosition }) => {
     return (
         <group ref={group}>
             <RobotDog />
-            <Html position={[0, 2, 0]} center>
+            <Html position={[1.8, 1.5, 0]} center>
                 <div style={{
-                    background: 'rgba(255,255,255,0.95)', padding: '15px', borderRadius: '15px',
+                    background: 'rgba(255,255,255,0.95)', padding: '15px', borderRadius: '15px 15px 15px 0',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)', minWidth: '220px', textAlign: 'center',
                     fontFamily: 'sans-serif', border: '2px solid #a855f7', pointerEvents: 'auto'
                 }}>
