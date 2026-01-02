@@ -1,6 +1,6 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, Sparkles, Html, useAnimations } from '@react-three/drei';
+import { Float, Sparkles, Html, useAnimations, Text } from '@react-three/drei';
 import { useNavigate } from 'react-router-dom';
 import Player from './Player';
 import * as THREE from 'three';
@@ -21,70 +21,127 @@ const DreamFloor = () => (
     </mesh>
 );
 
-const House = ({ position, rotation }) => {
-    const color = useMemo(() => ['#ffb7b2', '#ffdac1', '#e2f0cb', '#b5ead7', '#c7ceea'][Math.floor(Math.random() * 5)], []);
+// --- PROCEDURAL PROJECT ZONES ---
+const ProjectZone = ({ position, color, title, description, icon }) => {
+    const [hovered, setHover] = useState(false);
+
     return (
-        <group position={position} rotation={rotation}>
-            <mesh position={[0, 1, 0]}><boxGeometry args={[2, 2, 2]} /><meshStandardMaterial color="#fff" /></mesh>
-            <mesh position={[0, 2.5, 0]} rotation={[0, Math.PI / 4, 0]}><coneGeometry args={[1.8, 1.5, 4]} /><meshStandardMaterial color={color} /></mesh>
-            <mesh position={[0, 0.75, 1.01]}><planeGeometry args={[0.8, 1.5]} /><meshStandardMaterial color="#333" /></mesh>
+        <group position={position}>
+            {/* Floating Title */}
+            <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5} position={[0, 4, 0]}>
+                <Text
+                    fontSize={1.5}
+                    color="#a855f7"
+                    anchorX="center"
+                    anchorY="middle"
+                    outlineWidth={0.05}
+                    outlineColor="#fff"
+                >
+                    {title}
+                </Text>
+            </Float>
+
+            {/* Structure */}
+            <mesh position={[0, 1.5, 0]}
+                onPointerOver={() => setHover(true)}
+                onPointerOut={() => setHover(false)}
+            >
+                <boxGeometry args={[3, 3, 3]} />
+                <meshStandardMaterial color={hovered ? '#d8b4fe' : color} />
+            </mesh>
+
+            {/* topper */}
+            <mesh position={[0, 3.5, 0]} rotation={[0, Math.PI / 4, 0]}>
+                <coneGeometry args={[2.5, 2, 4]} />
+                <meshStandardMaterial color="#333" />
+            </mesh>
+
+            {/* Info Card (Visible on Hover/Near) */}
+            {hovered && (
+                <Html position={[0, 2, 2]} center>
+                    <div style={{
+                        background: 'rgba(255,255,255,0.95)', padding: '15px', borderRadius: '10px',
+                        border: '2px solid #a855f7', width: '200px', textAlign: 'center'
+                    }}>
+                        <div style={{ fontSize: '24px', marginBottom: '5px' }}>{icon}</div>
+                        <h4 style={{ margin: '0 0 5px 0', color: '#333' }}>{title}</h4>
+                        <p style={{ margin: '0', fontSize: '12px', color: '#666' }}>{description}</p>
+                    </div>
+                </Html>
+            )}
         </group>
     );
 };
+
 const Village = () => {
+    // Standard Houses
     const houses = useMemo(() => {
         const h = [];
-        for (let i = 0; i < 15; i++) {
-            const angle = (i / 15) * Math.PI * 2;
-            const r = 20 + Math.random() * 10;
-            h.push(<House key={i} position={[Math.cos(angle) * r, 0, Math.sin(angle) * r]} rotation={[0, -angle + Math.PI / 2, 0]} />);
+        for (let i = 0; i < 10; i++) { // Reduced count to make room for projects
+            const angle = (i / 10) * Math.PI * 2;
+            const r = 25 + Math.random() * 5;
+            // Skip areas where projects are
+            const x = Math.cos(angle) * r;
+            const z = Math.sin(angle) * r;
+            if (Math.abs(x) < 10 || Math.abs(z) < 10) continue; // Roughly
+
+            h.push(
+                <group key={i} position={[x, 0, z]} rotation={[0, -angle + Math.PI / 2, 0]}>
+                    <mesh position={[0, 1, 0]}><boxGeometry args={[2, 2, 2]} /><meshStandardMaterial color="#fff" /></mesh>
+                    <mesh position={[0, 2.5, 0]} rotation={[0, Math.PI / 4, 0]}><coneGeometry args={[1.8, 1.5, 4]} /><meshStandardMaterial color="#ffdac1" /></mesh>
+                </group>
+            );
         }
         return h;
     }, []);
-    return <group>{houses}</group>;
+
+    return (
+        <group>
+            {houses}
+            {/* Project Zones */}
+            <ProjectZone
+                position={[-15, 0, -5]}
+                color="#88ccff"
+                title="E-COMMERCE"
+                description="A full-stack shopping platform with Stripe integration."
+                icon="🛒"
+            />
+            <ProjectZone
+                position={[15, 0, -5]}
+                color="#ff88cc"
+                title="SOCIAL APP"
+                description="Real-time chat and media sharing platform."
+                icon="💬"
+            />
+            <ProjectZone
+                position={[0, 0, -20]}
+                color="#88ffcc"
+                title="DATA VIZ"
+                description="Interactive dashboards for complex datasets."
+                icon="📊"
+            />
+        </group>
+    );
 };
 
-// --- PROCEDURAL ROBOT DOG (STABLE) ---
-// Replaces the crashing GLB model
+// ... Robot Dog, Player, Collectibles (unchanged) ...
+// (Re-including necessary components for full file validity)
 const RobotDog = () => {
     const group = useRef();
     useFrame((state) => {
         if (group.current) {
-            // Breathe
             group.current.position.y = Math.sin(state.clock.elapsedTime * 3) * 0.05;
-            // Wag tail
             const tail = group.current.getObjectByName("tail");
             if (tail) tail.rotation.z = Math.sin(state.clock.elapsedTime * 10) * 0.2;
         }
     });
-
     return (
         <group ref={group}>
-            {/* Body */}
-            <mesh position={[0, 0.4, 0]}>
-                <boxGeometry args={[0.4, 0.4, 0.6]} />
-                <meshStandardMaterial color="#a855f7" />
-            </mesh>
-            {/* Head */}
-            <mesh position={[0, 0.7, 0.4]}>
-                <boxGeometry args={[0.3, 0.3, 0.3]} />
-                <meshStandardMaterial color="#ddd" />
-            </mesh>
-            {/* Ears */}
-            <mesh position={[0.15, 0.9, 0.4]} rotation={[0, 0, -0.2]}>
-                <boxGeometry args={[0.1, 0.2, 0.1]} />
-                <meshStandardMaterial color="#a855f7" />
-            </mesh>
-            <mesh position={[-0.15, 0.9, 0.4]} rotation={[0, 0, 0.2]}>
-                <boxGeometry args={[0.1, 0.2, 0.1]} />
-                <meshStandardMaterial color="#a855f7" />
-            </mesh>
-            {/* Tail */}
-            <mesh name="tail" position={[0, 0.6, -0.3]}>
-                <boxGeometry args={[0.1, 0.1, 0.4]} />
-                <meshStandardMaterial color="#a855f7" />
-            </mesh>
-            {/* Legs */}
+            <mesh position={[0, 0.4, 0]}><boxGeometry args={[0.4, 0.4, 0.6]} /><meshStandardMaterial color="#a855f7" /></mesh>
+            <mesh position={[0, 0.7, 0.4]}><boxGeometry args={[0.3, 0.3, 0.3]} /><meshStandardMaterial color="#ddd" /></mesh>
+            <mesh position={[0.15, 0.9, 0.4]} rotation={[0, 0, -0.2]}><boxGeometry args={[0.1, 0.2, 0.1]} /><meshStandardMaterial color="#a855f7" /></mesh>
+            <mesh position={[-0.15, 0.9, 0.4]} rotation={[0, 0, 0.2]}><boxGeometry args={[0.1, 0.2, 0.1]} /><meshStandardMaterial color="#a855f7" /></mesh>
+            <mesh name="tail" position={[0, 0.6, -0.3]}><boxGeometry args={[0.1, 0.1, 0.4]} /><meshStandardMaterial color="#a855f7" /></mesh>
             <mesh position={[0.15, 0.2, 0.2]}><boxGeometry args={[0.1, 0.4, 0.1]} /><meshStandardMaterial color="#333" /></mesh>
             <mesh position={[-0.15, 0.2, 0.2]}><boxGeometry args={[0.1, 0.4, 0.1]} /><meshStandardMaterial color="#333" /></mesh>
             <mesh position={[0.15, 0.2, -0.2]}><boxGeometry args={[0.1, 0.4, 0.1]} /><meshStandardMaterial color="#333" /></mesh>
@@ -229,7 +286,7 @@ const GalleryScene = () => {
                 position: 'absolute', bottom: 30, left: 30, color: 'rgba(100,100,100,0.8)', zIndex: 10,
                 fontFamily: 'Exo 2', pointerEvents: 'none'
             }}>
-                <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>VILLAGE MODE</div>
+                <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>PORTFOLIO WORLD</div>
                 <div>Collected: {score}</div>
             </div>
 
@@ -257,6 +314,8 @@ const GalleryScene = () => {
                 <Player ref={playerRef} position={[0, 0, 8]} />
                 <CollectiblesManager playerRef={playerRef} setScore={setScore} />
                 <DreamFloor />
+
+                {/* PROJECT ZONES & VILLAGE */}
                 <Village />
 
                 <DogGuide active={dogActive} playerPosition={playerPosForDog} />
