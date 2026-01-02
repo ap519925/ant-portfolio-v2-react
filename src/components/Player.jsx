@@ -4,6 +4,8 @@ import { useGLTF, useAnimations, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { SkeletonUtils } from 'three-stdlib';
 
+// RESTORING COMPRESSED DOG MODEL (6.4MB)
+// It works! It just needed light.
 const MODEL_PATH = '/assets/dog-compressed.glb';
 
 export const Player = (props) => {
@@ -12,29 +14,35 @@ export const Player = (props) => {
     const { actions, names } = useAnimations(animations, group);
     const [debugInfo, setDebugInfo] = useState("Loading Model...");
 
+    // Clone & Setup Material
     const clone = useMemo(() => {
         const c = SkeletonUtils.clone(scene);
         c.traverse((o) => {
             if (o.isMesh) {
-                // Ensure materials are simple for Safe Mode
-                // o.castShadow = true; // Disabled for now
+                o.castShadow = true;
+                o.receiveShadow = true;
+                // Tint purple if texture missing
                 if (!o.material.map) o.material.color.set('#a855f7');
+                // Ensure material reacts to light
+                o.material.needsUpdate = true;
             }
         });
         return c;
     }, [scene]);
 
+    // Animation Logic
     useEffect(() => {
         if (!names || names.length === 0) setDebugInfo("No Anims");
         else {
-            setDebugInfo(names.join(", "));
-            const idle = names.find(n => n.includes('Idle')) || names[0];
+            setDebugInfo("");
+            // Auto-play Idle
+            const idle = names.find(n => n.toLowerCase().includes('idle')) || names[0];
             const action = actions[idle];
-            if (action) action.reset().fadeIn(0.5).play();
+            if (action) action.reset().play();
         }
     }, [names, actions]);
 
-    const [position, setPosition] = useState([0, 0, 5]);
+    const [position, setPosition] = useState([0, 0, 5]); // Start point
     const [rotation, setRotation] = useState([0, Math.PI, 0]);
     const keys = useRef({ w: false, a: false, s: false, d: false, shift: false });
     const { camera } = useThree();
@@ -59,14 +67,16 @@ export const Player = (props) => {
         const { w, s, shift } = keys.current;
         const moving = w || s;
 
+        // Animation Switch
         if (names.length > 0) {
-            const runKey = names.find(n => n.includes('Run') || n.includes('Walk')) || names[1] || names[0];
-            const idleKey = names.find(n => n.includes('Idle')) || names[0];
+            const runKey = names.find(n => n.toLowerCase().includes('run') || n.toLowerCase().includes('walk')) || names[1] || names[0];
+            const idleKey = names.find(n => n.toLowerCase().includes('idle')) || names[0];
+
             const runAct = actions[runKey];
             const idleAct = actions[idleKey];
 
             if (moving) {
-                if (idleAct?.isRunning()) idleAct.fadeOut(2); // Slow fade
+                if (idleAct?.isRunning()) idleAct.fadeOut(0.2);
                 if (runAct && !runAct.isRunning()) runAct.reset().fadeIn(0.2).play();
                 if (runAct) runAct.timeScale = shift ? 1.5 : 1.0;
             } else {
@@ -76,11 +86,14 @@ export const Player = (props) => {
         }
 
         if (!group.current) return;
+
         let rotY = rotation[1];
         if (keys.current.a) rotY += 3 * delta;
         if (keys.current.d) rotY -= 3 * delta;
+
         let speed = shift ? 10 : 5;
         let moveX = 0; let moveZ = 0;
+
         if (keys.current.w) {
             moveX += Math.sin(rotY) * speed * delta;
             moveZ += Math.cos(rotY) * speed * delta;
@@ -89,21 +102,34 @@ export const Player = (props) => {
             moveX -= Math.sin(rotY) * speed * delta;
             moveZ -= Math.cos(rotY) * speed * delta;
         }
+
         const newPos = [position[0] + moveX, position[1], position[2] + moveZ];
         setPosition(newPos);
         setRotation([0, rotY, 0]);
+
         group.current.position.set(newPos[0], newPos[1], newPos[2]);
         group.current.rotation.set(0, rotY, 0);
 
-        camera.position.lerp(new THREE.Vector3(newPos[0] - Math.sin(rotY) * 5, 3, newPos[2] - Math.cos(rotY) * 5), 0.1);
+        // Third Person Camera
+        const camDist = 5;
+        const camHeight = 3;
+        const targetCamX = newPos[0] - Math.sin(rotY) * camDist;
+        const targetCamZ = newPos[2] - Math.cos(rotY) * camDist;
+
+        camera.position.lerp(new THREE.Vector3(targetCamX, camHeight, targetCamZ), 0.1);
         camera.lookAt(newPos[0], 1.5, newPos[2]);
     });
 
     return (
         <group ref={group} {...props} dispose={null}>
             <primitive object={clone} scale={1.5} />
-            <Html position={[0, 2.5, 0]}><div style={{ background: 'black', color: 'lime' }}>{debugInfo}</div></Html>
+            {/* Optional Shadow blob if shadows are off */}
+            {/* <mesh rotation={[-Math.PI/2,0,0]} position={[0,0,0]}>
+                 <circleGeometry args={[0.5, 32]} />
+                 <meshBasicMaterial color="black" opacity={0.5} transparent />
+             </mesh> */}
         </group>
     );
 };
+
 export default Player;

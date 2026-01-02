@@ -3,12 +3,12 @@ import { Canvas } from '@react-three/fiber';
 import { useNavigate } from 'react-router-dom';
 import Player from './Player';
 
-// BARE BONES GALLERY - NO SHADOWS, NO ENVIRONMENT, NO SKY
+// SIMPLE LIGHTING SCENE - RESTORING VISIBILITY
 const Wall = (props) => {
     return (
         <mesh {...props}>
             <boxGeometry args={[props.width, props.height, 0.5]} />
-            <meshBasicMaterial color="#eee" />
+            <meshStandardMaterial color="#eee" />
         </mesh>
     );
 };
@@ -17,7 +17,7 @@ const Floor = () => {
     return (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]}>
             <planeGeometry args={[100, 100]} />
-            <meshBasicMaterial color="#ccc" />
+            <meshStandardMaterial color="#ccc" />
             <gridHelper args={[100, 20]} />
         </mesh>
     );
@@ -27,12 +27,12 @@ const GalleryScene = () => {
     const navigate = useNavigate();
 
     return (
-        <div style={{ width: '100vw', height: '100vh', background: '#333' }}>
-            {/* NO SHADOWS PROP IN CANVAS */}
+        <div style={{ width: '100vw', height: '100vh', background: '#333', overflow: 'hidden' }}> {/* Added overflow hidden */}
             <Canvas camera={{ position: [0, 5, 12], fov: 60 }}>
 
-                {/* Basic Lights only */}
-                <ambientLight intensity={1} />
+                {/* RESTORED LIGHTS so character isn't black */}
+                <ambientLight intensity={1.5} />
+                <directionalLight position={[10, 10, 5]} intensity={2} />
 
                 <Player position={[0, 0, 8]} />
                 <Floor />
