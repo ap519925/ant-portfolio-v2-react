@@ -1,175 +1,207 @@
-import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle, useMemo } from 'react';
+import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Html, OrbitControls, useGLTF, useAnimations } from '@react-three/drei';
-import { useSphere } from '@react-three/cannon';
-import { SkeletonUtils } from 'three-stdlib';
+import { Html, OrbitControls, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 
-const MODEL_PATH = '/assets/Meshy_AI_Animation_Walking_withSkin.glb';
-useGLTF.preload(MODEL_PATH);
+// --- CONSTANTS ---
+const MOVE_SPEED = 10;
+const JUMP_FORCE = 12;
+const GRAVITY = 30;
+const DRAG = 5;
 
-// PHYSICS CONSTANTS
-const MOVE_SPEED = 12;
-const JUMP_FORCE = 8;
+// --- PROCEDURAL ROBOT COMPONENT ---
+// A simple group of meshes to represent the player. No GLB loading = No Crashes.
+const RobotPlayerModel = forwardRef((props, ref) => {
+    const group = useRef();
+
+    // Simple idle animation
+    useFrame((state) => {
+        if (!group.current) return;
+        const t = state.clock.getElapsedTime();
+        // Bobbing
+        group.current.position.y = Math.sin(t * 2) * 0.05 - 0.5; // Offset to center
+        // Arms swinging (if we added arms)
+    });
+
+    return (
+        <group ref={group} {...props}>
+            {/* Body */}
+            <mesh position={[0, 0.75, 0]}>
+                <boxGeometry args={[0.5, 0.6, 0.3]} />
+                <meshStandardMaterial color="#00d2ff" metalness={0.5} roughness={0.2} />
+            </mesh>
+            {/* Head */}
+            <mesh position={[0, 1.2, 0]}>
+                <boxGeometry args={[0.35, 0.35, 0.35]} />
+                <meshStandardMaterial color="#eee" />
+            </mesh>
+            {/* Eyes */}
+            <mesh position={[0.1, 1.25, 0.18]}>
+                <boxGeometry args={[0.08, 0.05, 0.02]} />
+                <meshStandardMaterial color="#000" />
+            </mesh>
+            <mesh position={[-0.1, 1.25, 0.18]}>
+                <boxGeometry args={[0.08, 0.05, 0.02]} />
+                <meshStandardMaterial color="#000" />
+            </mesh>
+            {/* Antenna */}
+            <mesh position={[0, 1.45, 0]} rotation={[0, 0, 0.2]}>
+                <cylinderGeometry args={[0.02, 0.02, 0.3]} />
+                <meshStandardMaterial color="#888" />
+            </mesh>
+            <mesh position={[0.03, 1.6, 0]}>
+                <sphereGeometry args={[0.05]} />
+                <meshStandardMaterial color="red" emissive="red" emissiveIntensity={0.5} />
+            </mesh>
+            {/* Wheel/Base instead of legs for simplicity */}
+            <mesh position={[0, 0.2, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                <cylinderGeometry args={[0.25, 0.25, 0.4]} />
+                <meshStandardMaterial color="#333" />
+            </mesh>
+        </group>
+    );
+});
 
 export const Player = forwardRef((props, ref) => {
-    const keys = useRef({ w: false, a: false, s: false, d: false, shift: false, space: false });
+    // Refs
+    // position is a Vector3 for easier math
+    const position = useRef(new THREE.Vector3(0, 1, 8));
+    const velocity = useRef(new THREE.Vector3(0, 0, 0));
+    const keys = useRef({ w: false, a: false, s: false, d: false, space: false, shift: false });
     const orbitRef = useRef();
-    const { scene, animations } = useGLTF(MODEL_PATH);
+    const playerGroup = useRef();
     const modelRef = useRef();
-    const { actions, names } = useAnimations(animations, modelRef);
 
-    // Clone the dog model
-    const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+    // Double Jump Logic
+    const jumpCount = useRef(0);
+    const canJump = useRef(true);
 
-    // Physics body for collision
-    const [physicsRef, api] = useSphere(() => ({
-        mass: 10,
-        position: props.position || [0, 1, 8],
-        args: [0.8], // radius
-        type: 'Dynamic',
-        linearDamping: 0.85, // Lower damping for better movement response
-        angularDamping: 1,
-        fixedRotation: true,
+    useImperativeHandle(ref, () => ({
+        position: position.current,
+        velocity: velocity.current
     }));
 
-    useImperativeHandle(ref, () => physicsRef.current);
-
-    const position = useRef([0, 1, 8]);
-    const velocity = useRef([0, 0, 0]);
-
-    // Subscribe to physics
-    useEffect(() => {
-        const unsubscribe = api.position.subscribe(v => position.current = v);
-        return unsubscribe;
-    }, [api.position]);
-
-    useEffect(() => {
-        const unsubscribe = api.velocity.subscribe(v => velocity.current = v);
-        return unsubscribe;
-    }, [api.velocity]);
-
-    // Start animation - model only has walking animation
-    useEffect(() => {
-        console.log('🎬 Total animations found:', names.length);
-        console.log('📋 Animation names:', names);
-        if (names && names.length > 0) {
-            const walkAction = actions[names[0]];
-            if (walkAction) {
-                console.log('▶️ Starting walking animation:', names[0]);
-                walkAction.reset().fadeIn(0.2).play();
-                walkAction.timeScale = 0; // Start at 0 speed (idle)
-            }
-        }
-    }, [names, actions]);
-
+    // Keyboard Input
     useEffect(() => {
         const onKeyDown = (e) => {
             const k = e.key.toLowerCase();
             if (keys.current[k] !== undefined) keys.current[k] = true;
-            if (e.key === 'Shift') keys.current.shift = true;
-
-            // Jump Logic (Space)
             if (e.code === 'Space') {
+                // Prevent scrolling
                 e.preventDefault();
-                // Simple jump
-                if (Math.abs(velocity.current[1]) < 0.1) { // Only if not already jumping
-                    api.velocity.set(velocity.current[0], JUMP_FORCE, velocity.current[2]);
+
+                if (canJump.current) {
+                    if (jumpCount.current < 2) {
+                        velocity.current.y = JUMP_FORCE;
+                        jumpCount.current++;
+
+                        // Flip animation on double jump?
+                        if (jumpCount.current === 2 && modelRef.current) {
+                            // We'll handle rotation in useFrame
+                        }
+                    }
+                    canJump.current = false; // Debounce slightly
                 }
             }
+            if (e.key === 'Shift') keys.current.shift = true;
         };
-
         const onKeyUp = (e) => {
             const k = e.key.toLowerCase();
             if (keys.current[k] !== undefined) keys.current[k] = false;
+            if (e.code === 'Space') canJump.current = true; // Reset debounce
             if (e.key === 'Shift') keys.current.shift = false;
         };
-
         window.addEventListener('keydown', onKeyDown);
         window.addEventListener('keyup', onKeyUp);
         return () => {
             window.removeEventListener('keydown', onKeyDown);
             window.removeEventListener('keyup', onKeyUp);
         };
-    }, [api]);
+    }, []);
 
+    // Physics Loop (Manual)
     useFrame((state, delta) => {
-        if (!physicsRef.current) return;
-
-        const { w, s, a, d, shift } = keys.current;
-        const moving = w || s || a || d;
-
-        // Camera relative movement
+        // 1. Get Camera Direction
         const camDir = new THREE.Vector3();
         state.camera.getWorldDirection(camDir);
         camDir.y = 0;
         camDir.normalize();
+        const rightDir = new THREE.Vector3().crossVectors(camDir, new THREE.Vector3(0, 1, 0)).normalize();
 
-        const right = new THREE.Vector3().crossVectors(camDir, new THREE.Vector3(0, 1, 0)).normalize();
-
+        // 2. Calculate Movement Vector
         const moveDir = new THREE.Vector3(0, 0, 0);
-        if (w) moveDir.add(camDir);
-        if (s) moveDir.sub(camDir);
-        if (a) moveDir.sub(right);
-        if (d) moveDir.add(right);
+        if (keys.current.w) moveDir.add(camDir);
+        if (keys.current.s) moveDir.sub(camDir);
+        if (keys.current.d) moveDir.add(rightDir);
+        if (keys.current.a) moveDir.sub(rightDir);
 
-        // Apply force-based movement for better physics
+        if (moveDir.lengthSq() > 0) moveDir.normalize();
+
+        // 3. Apply Acceleration
+        const speed = keys.current.shift ? MOVE_SPEED * 1.5 : MOVE_SPEED;
         if (moveDir.lengthSq() > 0) {
-            moveDir.normalize();
-            const speed = shift ? MOVE_SPEED * 1.5 : MOVE_SPEED;
-            const force = moveDir.multiplyScalar(speed * 200); // Stronger force
-            api.applyForce([force.x, 0, force.z], [0, 0, 0]);
+            velocity.current.x += moveDir.x * speed * delta * 5;
+            velocity.current.z += moveDir.z * speed * delta * 5;
 
-            // Limit max horizontal speed
-            const horizontalVel = Math.sqrt(velocity.current[0]**2 + velocity.current[2]**2);
-            if (horizontalVel > speed) {
-                const scale = speed / horizontalVel;
-                api.velocity.set(velocity.current[0] * scale, velocity.current[1], velocity.current[2] * scale);
-            }
-
-            // Rotate character model towards movement direction
-            const targetRot = Math.atan2(moveDir.x, moveDir.z);
+            // Rotate model to face direction
+            const angle = Math.atan2(moveDir.x, moveDir.z);
             if (modelRef.current) {
-                modelRef.current.rotation.y = targetRot; // Rotate visual model
+                // Smooth rotation
+                // modelRef.current.rotation.y = angle; 
+                // Using lerp for smoothness would require Quaternion, simple set for now:
+                modelRef.current.rotation.y = angle;
             }
         }
 
-        // Update camera
-        const pos = new THREE.Vector3(position.current[0], position.current[1], position.current[2]);
-        if (orbitRef.current) {
-            orbitRef.current.target.lerp(pos, 0.2);
-            orbitRef.current.update();
+        // 4. Apply Gravity
+        velocity.current.y -= GRAVITY * delta;
+
+        // 5. Apply Drag (Damping)
+        velocity.current.x -= velocity.current.x * DRAG * delta;
+        velocity.current.z -= velocity.current.z * DRAG * delta;
+
+        // 6. Update Position
+        position.current.x += velocity.current.x * delta;
+        position.current.y += velocity.current.y * delta;
+        position.current.z += velocity.current.z * delta;
+
+        // 7. Floor Collision (Simple y >= 0)
+        if (position.current.y < 0) {
+            position.current.y = 0;
+            velocity.current.y = 0;
+            jumpCount.current = 0; // Reset jumps
         }
 
-        // Animation - single walking animation
-        if (names.length > 0 && actions[names[0]]) {
-            const walkAction = actions[names[0]];
+        // 8. Update Visuals
+        if (playerGroup.current) {
+            playerGroup.current.position.copy(position.current);
 
-            if (moving) {
-                // Play walking animation when moving
-                walkAction.timeScale = shift ? 1.5 : 1.0;
+            // Front Flip effect on double jump
+            if (jumpCount.current === 2 && velocity.current.y > 0) {
+                if (modelRef.current) modelRef.current.rotation.x += 10 * delta;
             } else {
-                // Stop animation when idle (timeScale 0 = frozen on first frame)
-                walkAction.timeScale = 0;
+                if (modelRef.current) modelRef.current.rotation.x = 0;
             }
+        }
+
+        // 9. Camera Follow
+        if (orbitRef.current) {
+            orbitRef.current.target.lerp(position.current, 0.1);
+            orbitRef.current.update();
         }
     });
 
     return (
         <>
-            <OrbitControls
-                ref={orbitRef}
-                enablePan={false}
-                minDistance={5}
-                maxDistance={20}
-                maxPolarAngle={Math.PI / 2 - 0.1}
-            />
+            <OrbitControls ref={orbitRef} minDistance={5} maxDistance={20} enablePan={false} maxPolarAngle={Math.PI / 2 - 0.05} />
+            <group ref={playerGroup}>
+                <RobotPlayerModel ref={modelRef} />
 
-            <group ref={physicsRef} {...props} dispose={null}>
-                {/* Character Model */}
-                <group ref={modelRef} position={[0, -0.8, 0]}>
-                    <primitive object={clone} scale={1} castShadow receiveShadow />
-                </group>
+                {/* Shadow */}
+                <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+                    <circleGeometry args={[0.5, 32]} />
+                    <meshBasicMaterial color="black" opacity={0.3} transparent />
+                </mesh>
             </group>
         </>
     );
