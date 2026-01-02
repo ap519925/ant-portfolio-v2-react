@@ -7,11 +7,12 @@ import { SkeletonUtils } from 'three-stdlib';
 const MODEL_PATH = '/assets/dog-final.glb';
 useGLTF.preload(MODEL_PATH);
 
-export const Player = (props) => {
+export const Player = ({ playSound, soundEnabled, onPositionChange, ...props }) => {
     const group = useRef();
     const { scene, animations } = useGLTF(MODEL_PATH);
     const { actions, names } = useAnimations(animations, group);
     const [debugInfo, setDebugInfo] = useState("Loading...");
+    const footstepTimer = useRef(0);
 
     // Clone & Tint Material
     const clone = useMemo(() => {
@@ -75,6 +76,18 @@ export const Player = (props) => {
         const { w, s, shift } = keys.current;
         const moving = w || s;
 
+        // Footstep sounds
+        if (moving && soundEnabled && playSound) {
+            footstepTimer.current += delta;
+            const stepInterval = shift ? 0.25 : 0.4; // Faster steps when sprinting
+            if (footstepTimer.current >= stepInterval) {
+                playSound('footstep');
+                footstepTimer.current = 0;
+            }
+        } else {
+            footstepTimer.current = 0;
+        }
+
         // Auto Switch Animation
         if (names.length > 1) {
             const runKey = names.find(n => n.toLowerCase().includes('run') || n.toLowerCase().includes('walk')) || names[1] || names[0];
@@ -118,6 +131,11 @@ export const Player = (props) => {
         const newPos = [position[0] + moveX, position[1], position[2] + moveZ];
         setPosition(newPos);
         setRotation([0, rotY, 0]);
+
+        // Update parent component with new position
+        if (onPositionChange) {
+            onPositionChange(newPos);
+        }
 
         group.current.position.set(newPos[0], newPos[1], newPos[2]);
         group.current.rotation.set(0, rotY, 0);

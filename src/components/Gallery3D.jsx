@@ -1,10 +1,9 @@
 import React, { useRef, useState, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Environment, Sky, Cloud, Stars, Sparkles, Float, SoftShadows } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+import { Environment, Sky, Cloud, Sparkles, Float } from '@react-three/drei';
 import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing';
 import { useNavigate } from 'react-router-dom';
 import Player from './Player';
-import * as THREE from 'three';
 
 // --- DREAMSCAPE COMPONENTS ---
 
@@ -21,24 +20,19 @@ const DreamFloor = () => {
     return (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]} receiveShadow>
             <planeGeometry args={[1000, 1000]} />
-            {/* Pastel Pinkish/Purple Floor */}
             <meshStandardMaterial color="#eecbf2" roughness={0.4} metalness={0.3} />
-            {/* Subtle Grid overlay */}
             <gridHelper args={[1000, 100, '#ffffff', '#eecbf2']} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} />
         </mesh>
     );
 };
 
-// Sakura Tree (Pink/White)
 const SakuraTree = ({ position, scale = 1 }) => {
     return (
         <group position={position} scale={scale}>
-            {/* Trunk - White/Birch style */}
             <mesh position={[0, 1, 0]} castShadow receiveShadow>
                 <cylinderGeometry args={[0.15, 0.3, 2, 8]} />
                 <meshStandardMaterial color="#fff" />
             </mesh>
-            {/* Leaves - Pink/Sakura */}
             <mesh position={[0, 3, 0]} castShadow receiveShadow>
                 <coneGeometry args={[1.5, 3, 8]} />
                 <meshStandardMaterial color="#ffb7b2" emissive="#ffb7b2" emissiveIntensity={0.2} />
@@ -66,7 +60,6 @@ const Forest = () => {
     return <group>{trees}</group>;
 };
 
-// Floating Geometric Shapes for "Magic" feel
 const FloatingShapes = () => {
     return (
         <Float speed={2} rotationIntensity={1} floatIntensity={2}>
@@ -120,36 +113,32 @@ const GalleryScene = () => {
                 <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>D R E A M S C A P E</div>
             </div>
 
-            <Canvas shadows camera={{ position: [0, 5, 12], fov: 60 }}>
-                {/* Dreamy Fog */}
+            <Canvas shadows camera={{ position: [0, 5, 12], fov: 60 }} gl={{ preserveDrawingBuffer: true }}>
+                {/* Fog */}
                 <fog attach="fog" args={['#eecbf2', 10, 80]} />
 
-                <SoftShadows size={15} samples={12} focus={0.5} />
+                {/* Removed SoftShadows - Causing Shader Error */}
 
-                {/* Golden Hour Lighting */}
+                {/* Lighting */}
                 <ambientLight intensity={0.6} color="#ffe4e1" />
                 <directionalLight
                     position={[30, 50, 20]}
                     intensity={1.2}
                     color="#fff5e6"
                     castShadow
-                    shadow-mapSize={[2048, 2048]}
+                    shadow-mapSize={[1024, 1024]}
                 />
 
-                {/* Dramatic Sky */}
-                <Sky sunPosition={[100, 10, 100]} turbidity={0.3} rayleigh={0.8} mieCoefficient={0.005} mieDirectionalG={0.8} />
+                <Sky sunPosition={[100, 10, 100]} turbidity={0.3} rayleigh={0.8} />
                 <Environment preset="sunset" background={false} />
 
-                {/* Particles Everywhere */}
                 <Sparkles count={500} scale={50} size={6} speed={0.4} opacity={0.6} color="#fff" />
                 <Sparkles count={200} scale={30} size={10} speed={0.2} opacity={0.4} color="#ffd1dc" />
 
-                {/* Clouds */}
                 <Cloud position={[-10, 20, -30]} speed={0.1} opacity={0.5} color="#fff0f5" />
                 <Cloud position={[20, 15, -20]} speed={0.1} opacity={0.5} color="#e0ffff" />
 
                 <Player position={[0, 0, 8]} />
-
                 <DreamFloor />
                 <Forest />
                 <FloatingShapes />
@@ -166,7 +155,7 @@ const GalleryScene = () => {
                     <Painting position={[9.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} color="#ffa07a" label="Project 3" id="3" navigate={navigate} />
                 </group>
 
-                {/* Post Processing: Bloom + Grain for 'Anime' look */}
+                {/* Post Processing */}
                 <EffectComposer disableNormalPass>
                     <Bloom luminanceThreshold={0.8} intensity={1.2} levels={9} mipmapBlur />
                     <Noise opacity={0.05} />
