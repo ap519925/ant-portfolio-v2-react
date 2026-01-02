@@ -1,6 +1,6 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, Sparkles, Html, useAnimations, Text } from '@react-three/drei';
+import { Float, Sparkles, Html } from '@react-three/drei';
 import { useNavigate } from 'react-router-dom';
 import Player from './Player';
 import * as THREE from 'three';
@@ -21,47 +21,37 @@ const DreamFloor = () => (
     </mesh>
 );
 
-// --- PROCEDURAL PROJECT ZONES ---
+// --- PROCEDURAL PROJECT ZONES (HTML LABELS) ---
 const ProjectZone = ({ position, color, title, description, icon }) => {
     const [hovered, setHover] = useState(false);
-
     return (
         <group position={position}>
-            {/* Floating Title */}
-            <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5} position={[0, 4, 0]}>
-                <Text
-                    fontSize={1.5}
-                    color="#a855f7"
-                    anchorX="center"
-                    anchorY="middle"
-                    outlineWidth={0.05}
-                    outlineColor="#fff"
-                >
+            {/* Title Label (HTML) */}
+            <Html position={[0, 4, 0]} center transform sprite zIndexRange={[100, 0]}>
+                <div style={{
+                    color: '#a855f7', fontSize: '24px', fontWeight: 'bold', fontFamily: 'sans-serif',
+                    textShadow: '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff',
+                    pointerEvents: 'none', whiteSpace: 'nowrap'
+                }}>
                     {title}
-                </Text>
-            </Float>
+                </div>
+            </Html>
 
-            {/* Structure */}
-            <mesh position={[0, 1.5, 0]}
-                onPointerOver={() => setHover(true)}
-                onPointerOut={() => setHover(false)}
-            >
+            <mesh position={[0, 1.5, 0]} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)} onClick={() => setHover(!hovered)}>
                 <boxGeometry args={[3, 3, 3]} />
                 <meshStandardMaterial color={hovered ? '#d8b4fe' : color} />
             </mesh>
-
-            {/* topper */}
             <mesh position={[0, 3.5, 0]} rotation={[0, Math.PI / 4, 0]}>
                 <coneGeometry args={[2.5, 2, 4]} />
                 <meshStandardMaterial color="#333" />
             </mesh>
 
-            {/* Info Card (Visible on Hover/Near) */}
+            {/* Info Card */}
             {hovered && (
-                <Html position={[0, 2, 2]} center>
+                <Html position={[0, 2, 2]} center zIndexRange={[100, 0]}>
                     <div style={{
                         background: 'rgba(255,255,255,0.95)', padding: '15px', borderRadius: '10px',
-                        border: '2px solid #a855f7', width: '200px', textAlign: 'center'
+                        border: '2px solid #a855f7', width: '200px', textAlign: 'center', pointerEvents: 'none'
                     }}>
                         <div style={{ fontSize: '24px', marginBottom: '5px' }}>{icon}</div>
                         <h4 style={{ margin: '0 0 5px 0', color: '#333' }}>{title}</h4>
@@ -74,17 +64,14 @@ const ProjectZone = ({ position, color, title, description, icon }) => {
 };
 
 const Village = () => {
-    // Standard Houses
     const houses = useMemo(() => {
         const h = [];
-        for (let i = 0; i < 10; i++) { // Reduced count to make room for projects
+        for (let i = 0; i < 10; i++) {
             const angle = (i / 10) * Math.PI * 2;
             const r = 25 + Math.random() * 5;
-            // Skip areas where projects are
             const x = Math.cos(angle) * r;
             const z = Math.sin(angle) * r;
-            if (Math.abs(x) < 10 || Math.abs(z) < 10) continue; // Roughly
-
+            if (Math.abs(x) < 10 || Math.abs(z) < 10) continue;
             h.push(
                 <group key={i} position={[x, 0, z]} rotation={[0, -angle + Math.PI / 2, 0]}>
                     <mesh position={[0, 1, 0]}><boxGeometry args={[2, 2, 2]} /><meshStandardMaterial color="#fff" /></mesh>
@@ -98,34 +85,14 @@ const Village = () => {
     return (
         <group>
             {houses}
-            {/* Project Zones */}
-            <ProjectZone
-                position={[-15, 0, -5]}
-                color="#88ccff"
-                title="E-COMMERCE"
-                description="A full-stack shopping platform with Stripe integration."
-                icon="🛒"
-            />
-            <ProjectZone
-                position={[15, 0, -5]}
-                color="#ff88cc"
-                title="SOCIAL APP"
-                description="Real-time chat and media sharing platform."
-                icon="💬"
-            />
-            <ProjectZone
-                position={[0, 0, -20]}
-                color="#88ffcc"
-                title="DATA VIZ"
-                description="Interactive dashboards for complex datasets."
-                icon="📊"
-            />
+            <ProjectZone position={[-15, 0, -5]} color="#88ccff" title="E-COMMERCE" description="A full-stack shopping platform with Stripe integration." icon="🛒" />
+            <ProjectZone position={[15, 0, -5]} color="#ff88cc" title="SOCIAL APP" description="Real-time chat and media sharing platform." icon="💬" />
+            <ProjectZone position={[0, 0, -20]} color="#88ffcc" title="DATA VIZ" description="Interactive dashboards for complex datasets." icon="📊" />
         </group>
     );
 };
 
-// ... Robot Dog, Player, Collectibles (unchanged) ...
-// (Re-including necessary components for full file validity)
+// --- ROBOT GUIDE ---
 const RobotDog = () => {
     const group = useRef();
     useFrame((state) => {
@@ -210,6 +177,12 @@ const btnStyle = {
     background: '#a855f7', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold'
 };
 
+const hudBtn = {
+    padding: '8px 15px', background: 'rgba(255,255,255,0.8)', border: '1px solid #aaa',
+    borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px',
+    boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+};
+
 const Collectible = ({ position, color, type, onCollect }) => {
     const ref = useRef();
     const [active, setActive] = useState(true);
@@ -280,8 +253,25 @@ const GalleryScene = () => {
         setDogActive(true);
     };
 
+    const teleportTo = (x, z) => {
+        if (playerRef.current) {
+            playerRef.current.position.set(x, 0.5, z);
+        }
+    };
+
     return (
         <div style={{ width: '100vw', height: '100vh', background: '#ffe4e1', overflow: 'hidden' }}>
+            {/* HUD - FAST TRAVEL */}
+            <div style={{
+                position: 'absolute', top: 20, left: 20, zIndex: 10,
+                display: 'flex', gap: '10px'
+            }}>
+                <button onClick={() => teleportTo(0, 8)} style={hudBtn}>🏠 Base</button>
+                <button onClick={() => teleportTo(-15, -5)} style={hudBtn}>🛒 Shop</button>
+                <button onClick={() => teleportTo(15, -5)} style={hudBtn}>💬 Social</button>
+                <button onClick={() => teleportTo(0, -20)} style={hudBtn}>📊 Data</button>
+            </div>
+
             <div style={{
                 position: 'absolute', bottom: 30, left: 30, color: 'rgba(100,100,100,0.8)', zIndex: 10,
                 fontFamily: 'Exo 2', pointerEvents: 'none'
@@ -315,7 +305,6 @@ const GalleryScene = () => {
                 <CollectiblesManager playerRef={playerRef} setScore={setScore} />
                 <DreamFloor />
 
-                {/* PROJECT ZONES & VILLAGE */}
                 <Village />
 
                 <DogGuide active={dogActive} playerPosition={playerPosForDog} />
