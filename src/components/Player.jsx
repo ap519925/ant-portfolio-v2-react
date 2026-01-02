@@ -28,6 +28,7 @@ export const Player = forwardRef((props, ref) => {
 
             // Jump Logic (Space)
             if (e.code === 'Space') {
+                e.preventDefault(); // Prevent scrolling
                 if (jumpCount.current < 2) { // Double Jump
                     velocity.current.y = JUMP_FORCE;
                     isGrounded.current = false;
