@@ -4,7 +4,6 @@ import { useGLTF, useAnimations, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { SkeletonUtils } from 'three-stdlib';
 
-// Meshy AI Model with Merged Animations
 const MODEL_PATH = '/assets/dog-final.glb';
 useGLTF.preload(MODEL_PATH);
 
@@ -14,30 +13,48 @@ export const Player = (props) => {
     const { actions, names } = useAnimations(animations, group);
     const [debugInfo, setDebugInfo] = useState("Loading...");
 
-    // Debug & Animation Logic
+    // Clone & Tint Material
+    const clone = useMemo(() => {
+        const c = SkeletonUtils.clone(scene);
+        // Apply Color Tint manually since textures might be missing or lighting is simple
+        c.traverse((o) => {
+            if (o.isMesh) {
+                // Determine existing material or replace
+                if (o.material) {
+                    // Check if it's the Suit or Skin?
+                    // Just tint everything slightly Purple/Grey for a stylized look
+                    // or preserve texture map if exists
+                    o.castShadow = true;
+                    o.receiveShadow = true;
+                    if (!o.material.map) {
+                        // Only tint if no texture
+                        o.material.color.set('#a855f7'); // Purple
+                    }
+                }
+            }
+        });
+        return c;
+    }, [scene]);
+
+    // Animation Logic
     useEffect(() => {
         if (!names || names.length === 0) {
-            setDebugInfo("No Animations Found!");
+            setDebugInfo("No Animations!");
         } else {
-            console.log("Found Animations:", names);
             setDebugInfo("Found: " + names.join(", "));
-
-            // Try to find Idle/Run
-            const idleAnim = names.find(n => n.toLowerCase().includes('idle')) || names[0];
-            const action = actions[idleAnim];
+            // Auto play Index 0 or Idle
+            const idleIdx = names.findIndex(n => n.toLowerCase().includes('idle'));
+            const idx = idleIdx >= 0 ? idleIdx : 0;
+            const action = actions[names[idx]];
             if (action) action.reset().fadeIn(0.5).play();
         }
     }, [names, actions]);
 
-    const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
-
-    // State
     const [position, setPosition] = useState([0, 0, 5]);
     const [rotation, setRotation] = useState([0, Math.PI, 0]);
     const keys = useRef({ w: false, a: false, s: false, d: false, shift: false });
     const { camera } = useThree();
 
-    // Key Listeners
     useEffect(() => {
         const bg = (e) => {
             const k = e.key.toLowerCase();
@@ -58,37 +75,28 @@ export const Player = (props) => {
         const { w, s, shift } = keys.current;
         const moving = w || s;
 
-        // Animation Switching
-        // Heuristic: If we have >1 anims, try to switch.
-        // Meshy output usually has: 'Idle', 'Run', 'Walk'?
-        // If names are weird (e.g. 'animation_0'), we default to [0] and [1].
+        // Auto Switch Animation
         if (names.length > 1) {
-            const idleName = names.find(n => n.toLowerCase().includes('idle')) || names[0];
-            const moveName = names.find(n => n.toLowerCase().includes('run') || n.toLowerCase().includes('walk')) || names[1] || names[0];
+            const runKey = names.find(n => n.toLowerCase().includes('run') || n.toLowerCase().includes('walk')) || names[1] || names[0];
+            const idleKey = names.find(n => n.toLowerCase().includes('idle')) || names[0];
 
-            const idleAction = actions[idleName];
-            const moveAction = actions[moveName];
+            const runAct = actions[runKey];
+            const idleAct = actions[idleKey];
 
             if (moving) {
-                if (idleAction && idleAction.isRunning()) idleAction.fadeOut(0.2);
-                if (moveAction && !moveAction.isRunning()) {
-                    moveAction.reset().fadeIn(0.2).play();
-                }
-                if (moveAction) moveAction.timeScale = shift ? 1.5 : 1.0;
+                if (idleAct && idleAct.isRunning()) idleAct.fadeOut(0.2);
+                if (runAct && !runAct.isRunning()) runAct.reset().fadeIn(0.2).play();
+                if (runAct) runAct.timeScale = shift ? 1.5 : 1.0;
             } else {
-                if (moveAction && moveAction.isRunning()) moveAction.fadeOut(0.2);
-                if (idleAction && !idleAction.isRunning()) {
-                    idleAction.reset().fadeIn(0.2).play();
-                }
+                if (runAct && runAct.isRunning()) runAct.fadeOut(0.2);
+                if (idleAct && !idleAct.isRunning()) idleAct.reset().fadeIn(0.2).play();
             }
         } else if (names.length === 1) {
-            // Single Animation handling (Always play, maybe speed up?)
-            const action = actions[names[0]];
-            if (moving) action.timeScale = shift ? 1.5 : 1.0;
-            else action.timeScale = 1.0; // Play normally if idle?
+            const act = actions[names[0]];
+            if (moving) act.timeScale = shift ? 1.5 : 1.0;
+            else act.timeScale = 1.0;
         }
 
-        // --- Movement Logic ---
         if (!group.current) return;
 
         let rotY = rotation[1];
@@ -125,11 +133,9 @@ export const Player = (props) => {
 
     return (
         <group ref={group} {...props} dispose={null}>
-            {/* Standard scale logic often needs adjustment for Meshy models */}
             <primitive object={clone} scale={1.5} />
-
             <Html position={[0, 2.5, 0]}>
-                <div style={{ background: 'black', color: 'lime', padding: '5px', borderRadius: '4px', fontSize: '10px', whiteSpace: 'nowrap' }}>
+                <div style={{ background: 'black', color: 'lime', padding: '5px', borderRadius: '4px', fontSize: '10px' }}>
                     {debugInfo}
                 </div>
             </Html>

@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Environment, Stars } from '@react-three/drei'; // Restore imports
 import { useNavigate } from 'react-router-dom';
 import Player from './Player';
 
@@ -25,12 +24,10 @@ const Floor = () => {
 
 const Painting = ({ position, rotation, color, label, id, navigate }) => {
     const [hovered, setHover] = useState(false);
-
     return (
         <group position={position} rotation={rotation}>
             {/* Spotlight */}
             <spotLight position={[0, 3, 2]} intensity={5} angle={0.5} penumbra={1} castShadow />
-
             {/* Frame */}
             <mesh position={[0, 1.5, 0.1]}>
                 <boxGeometry args={[3.2, 2.2, 0.2]} />
@@ -64,39 +61,31 @@ const GalleryScene = () => {
 
     return (
         <div style={{ width: '100vw', height: '100vh', background: '#000' }}>
-            {/* Hints */}
             <div style={{
                 position: 'absolute', bottom: 30, left: 30, color: 'white', zIndex: 10,
                 fontFamily: 'Exo 2', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '8px'
             }}>
-                <div><b>WASD</b> to Move • <b>Shift</b> to Run • <b>Mouse</b> to Click Art</div>
+                <div><b>WASD</b> to Move • <b>Shift</b> to Run</div>
             </div>
 
             <Canvas shadows>
-                <ambientLight intensity={0.5} />
-                <pointLight position={[0, 10, 0]} intensity={0.5} />
+                {/* Simplified Lighting to prevent crash */}
+                <ambientLight intensity={0.8} />
+                <directionalLight position={[5, 10, 5]} intensity={1.5} castShadow />
 
-                {/* The Player (Third Person) */}
                 <Player position={[0, 0, 8]} />
 
-                {/* Room Structure */}
                 <Floor />
-                <Wall position={[0, 2.5, -10]} width={20} height={10} /> {/* Back */}
-                <Wall position={[-10, 2.5, 0]} rotation={[0, Math.PI / 2, 0]} width={20} height={10} /> {/* Left */}
-                <Wall position={[10, 2.5, 0]} rotation={[0, -Math.PI / 2, 0]} width={20} height={10} /> {/* Right */}
-                <Wall position={[0, 2.5, 10]} width={20} height={10} /> {/* Front / Entry */}
+                <Wall position={[0, 2.5, -10]} width={20} height={10} />
+                <Wall position={[-10, 2.5, 0]} rotation={[0, Math.PI / 2, 0]} width={20} height={10} />
+                <Wall position={[10, 2.5, 0]} rotation={[0, -Math.PI / 2, 0]} width={20} height={10} />
+                <Wall position={[0, 2.5, 10]} width={20} height={10} />
 
-                {/* Exhibits */}
                 <Painting position={[0, 0, -9.5]} color="cyan" label="Project 1" id="1" navigate={navigate} />
                 <Painting position={[-9.5, 0, 0]} rotation={[0, Math.PI / 2, 0]} color="purple" label="Project 2" id="2" navigate={navigate} />
                 <Painting position={[9.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} color="orange" label="Project 3" id="3" navigate={navigate} />
-
-                {/* Restore Environment/Stars for color/reflections */}
-                <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-                <Environment preset="city" />
             </Canvas>
 
-            {/* Exit Button */}
             <button
                 style={{
                     position: 'absolute', top: 20, right: 20, zIndex: 20,
