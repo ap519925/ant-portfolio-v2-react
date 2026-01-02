@@ -1,12 +1,11 @@
 import React, { useRef, useState, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Environment, Sky, Float } from '@react-three/drei';
-// import { Cloud, Sparkles } from '@react-three/drei'; // REMOVED FOR DEBUG
-// import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing'; // DISABLED
+import { Environment, Sky, Float, Sparkles } from '@react-three/drei';
+// Cloud disabled for stability
 import { useNavigate } from 'react-router-dom';
 import Player from './Player';
 
-// --- DREAMSCAPE COMPONENTS ---
+// --- DREAMSCAPE COMPONENTS (OPTIMIZED) ---
 
 const Wall = (props) => {
     return (
@@ -20,18 +19,49 @@ const Wall = (props) => {
 const DreamFloor = () => {
     return (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]} receiveShadow>
-            <planeGeometry args={[1000, 1000]} />
+            <planeGeometry args={[500, 500]} /> {/* Reduced from 1000 to save fill rate */}
             <meshStandardMaterial color="#eecbf2" roughness={0.4} metalness={0.3} />
-            <gridHelper args={[1000, 100, '#ffffff', '#eecbf2']} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} />
+            <gridHelper args={[500, 50, '#ffffff', '#eecbf2']} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} />
         </mesh>
     );
 };
 
-// FOREST DISABLED TO RULE OUT GEOMETRY OVERLOAD
-// const SakuraTree = ({ position, scale = 1 }) => { ... }
-// const Forest = () => { ... }
+// Reduced Segments for lighter geometry
+const SakuraTree = ({ position, scale = 1 }) => {
+    return (
+        <group position={position} scale={scale}>
+            <mesh position={[0, 1, 0]} castShadow receiveShadow>
+                <cylinderGeometry args={[0.15, 0.3, 2, 5]} /> {/* 5 segments */}
+                <meshStandardMaterial color="#fff" />
+            </mesh>
+            <mesh position={[0, 3, 0]} castShadow receiveShadow>
+                <coneGeometry args={[1.5, 3, 5]} />
+                <meshStandardMaterial color="#ffb7b2" emissive="#ffb7b2" emissiveIntensity={0.2} />
+            </mesh>
+            <mesh position={[0, 4.5, 0]} castShadow receiveShadow>
+                <coneGeometry args={[1.2, 2.5, 5]} />
+                <meshStandardMaterial color="#ffdac1" emissive="#ffdac1" emissiveIntensity={0.2} />
+            </mesh>
+        </group>
+    );
+};
 
-// Floating Geometric Shapes for "Magic" feel
+const Forest = () => {
+    const trees = useMemo(() => {
+        const t = [];
+        // Reduced count to 20 trees
+        for (let i = 0; i < 20; i++) {
+            const x = (Math.random() - 0.5) * 100;
+            const z = (Math.random() - 0.5) * 100;
+            if (Math.abs(x) < 20 && Math.abs(z) < 20) continue;
+            const scale = 0.8 + Math.random() * 0.8;
+            t.push(<SakuraTree key={i} position={[x, 0, z]} scale={scale} />);
+        }
+        return t;
+    }, []);
+    return <group>{trees}</group>;
+};
+
 const FloatingShapes = () => {
     return (
         <Float speed={2} rotationIntensity={1} floatIntensity={2}>
@@ -82,10 +112,10 @@ const GalleryScene = () => {
                 position: 'absolute', bottom: 30, left: 30, color: 'rgba(100,100,100,0.8)', zIndex: 10,
                 fontFamily: 'Exo 2', letterSpacing: '2px', pointerEvents: 'none'
             }}>
-                <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>D R E A M S C A P E (PROBE)</div>
+                <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>D R E A M S C A P E (LITE)</div>
             </div>
 
-            <Canvas shadows camera={{ position: [0, 5, 12], fov: 60 }} gl={{ preserveDrawingBuffer: true }}>
+            <Canvas shadows camera={{ position: [0, 5, 12], fov: 60 }} gl={{ preserveDrawingBuffer: true, antialias: true, failIfMajorPerformanceCaveat: false }}>
                 {/* Fog */}
                 <fog attach="fog" args={['#eecbf2', 10, 80]} />
 
@@ -102,10 +132,11 @@ const GalleryScene = () => {
                 <Sky sunPosition={[100, 10, 100]} turbidity={0.3} rayleigh={0.8} />
                 <Environment preset="sunset" background={false} />
 
-                {/* HEAVY ELEMENTS DISABLED */}
-                {/* <Sparkles ... /> */}
-                {/* <Cloud ... /> */}
-                {/* <Forest /> */}
+                {/* Conservative Particles */}
+                <Sparkles count={200} scale={40} size={6} speed={0.4} opacity={0.6} color="#fff" />
+
+                {/* Re-enabled Forest with reduced polygon count */}
+                <Forest />
 
                 <Player position={[0, 0, 8]} />
                 <DreamFloor />
