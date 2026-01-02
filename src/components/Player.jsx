@@ -1,24 +1,67 @@
-import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Html, OrbitControls } from '@react-three/drei';
+import { Html, OrbitControls, useGLTF, useAnimations } from '@react-three/drei';
+import { useSphere } from '@react-three/cannon';
+import { SkeletonUtils } from 'three-stdlib';
 import * as THREE from 'three';
 
+const MODEL_PATH = '/assets/Meshy_AI_Animation_Walking_withSkin.glb';
+useGLTF.preload(MODEL_PATH);
+
 // PHYSICS CONSTANTS
-const GRAVITY = 30;
-const JUMP_FORCE = 10;
-const MOVE_SPEED = 10;
+const MOVE_SPEED = 12;
+const JUMP_FORCE = 8;
 
 export const Player = forwardRef((props, ref) => {
-    const group = useRef();
-    useImperativeHandle(ref, () => group.current);
-
     const keys = useRef({ w: false, a: false, s: false, d: false, shift: false, space: false });
     const orbitRef = useRef();
+    const { scene, animations } = useGLTF(MODEL_PATH);
+    const modelRef = useRef();
+    const { actions, names } = useAnimations(animations, modelRef);
 
-    // Physics State
-    const velocity = useRef(new THREE.Vector3(0, 0, 0));
-    const isGrounded = useRef(true);
-    const jumpCount = useRef(0);
+    // Clone the dog model
+    const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+
+    // Physics body for collision
+    const [physicsRef, api] = useSphere(() => ({
+        mass: 10,
+        position: props.position || [0, 1, 8],
+        args: [0.8], // radius
+        type: 'Dynamic',
+        linearDamping: 0.85, // Lower damping for better movement response
+        angularDamping: 1,
+        fixedRotation: true,
+    }));
+
+    useImperativeHandle(ref, () => physicsRef.current);
+
+    const position = useRef([0, 1, 8]);
+    const velocity = useRef([0, 0, 0]);
+
+    // Subscribe to physics
+    useEffect(() => {
+        const unsubscribe = api.position.subscribe(v => position.current = v);
+        return unsubscribe;
+    }, [api.position]);
+
+    useEffect(() => {
+        const unsubscribe = api.velocity.subscribe(v => velocity.current = v);
+        return unsubscribe;
+    }, [api.velocity]);
+
+    // Start animation - model only has walking animation
+    useEffect(() => {
+        console.log('🎬 Total animations found:', names.length);
+        console.log('📋 Animation names:', names);
+        if (names && names.length > 0) {
+            const walkAction = actions[names[0]];
+            if (walkAction) {
+                console.log('▶️ Starting walking animation:', names[0]);
+                walkAction.reset().fadeIn(0.2).play();
+                walkAction.timeScale = 0; // Start at 0 speed (idle)
+            }
+        }
+    }, [names, actions]);
 
     useEffect(() => {
         const onKeyDown = (e) => {
@@ -28,16 +71,10 @@ export const Player = forwardRef((props, ref) => {
 
             // Jump Logic (Space)
             if (e.code === 'Space') {
-                e.preventDefault(); // Prevent scrolling
-                if (jumpCount.current < 2) { // Double Jump
-                    velocity.current.y = JUMP_FORCE;
-                    isGrounded.current = false;
-                    jumpCount.current++;
-
-                    // Visual feedback for double jump?
-                    if (jumpCount.current === 2) {
-                        // Trigger flip? logic in useFrame
-                    }
+                e.preventDefault();
+                // Simple jump
+                if (Math.abs(velocity.current[1]) < 0.1) { // Only if not already jumping
+                    api.velocity.set(velocity.current[0], JUMP_FORCE, velocity.current[2]);
                 }
             }
         };
@@ -54,83 +91,66 @@ export const Player = forwardRef((props, ref) => {
             window.removeEventListener('keydown', onKeyDown);
             window.removeEventListener('keyup', onKeyUp);
         };
-    }, []);
+    }, [api]);
 
     useFrame((state, delta) => {
-        if (!group.current) return;
+        if (!physicsRef.current) return;
 
-        // 1. Update Camera Target
-        if (orbitRef.current) {
-            orbitRef.current.target.lerp(group.current.position, 0.2);
-            orbitRef.current.update();
-        }
-
-        const { w, s, a, d } = keys.current;
+        const { w, s, a, d, shift } = keys.current;
         const moving = w || s || a || d;
 
-        // 2. Horizontal Movement (Camera Relative)
+        // Camera relative movement
         const camDir = new THREE.Vector3();
         state.camera.getWorldDirection(camDir);
-        camDir.y = 0; camDir.normalize();
-        const right = new THREE.Vector3().crossVectors(camDir, new THREE.Vector3(0, 1, 0)).normalize(); // Left actually?
-        // Wait, standard Cross(Forward, Up) = Right. For WebGL (Right-Handed): 
-        // Forward is -Z. Up is +Y. Cross(-Z, +Y) = +X (Right).
-        // camera.getWorldDirection returns direction vector (Target - Pos). 
-        // If looking -Z. Dir = (0,0,-1). Cross = (1,0,0) = +X. Correct.
+        camDir.y = 0;
+        camDir.normalize();
+
+        const right = new THREE.Vector3().crossVectors(camDir, new THREE.Vector3(0, 1, 0)).normalize();
 
         const moveDir = new THREE.Vector3(0, 0, 0);
         if (w) moveDir.add(camDir);
         if (s) moveDir.sub(camDir);
-        if (a) moveDir.sub(right); // A goes Left? If Right vector is +X, we want -X.
+        if (a) moveDir.sub(right);
         if (d) moveDir.add(right);
 
+        // Apply force-based movement for better physics
         if (moveDir.lengthSq() > 0) {
             moveDir.normalize();
-            // Apply speed to X/Z velocity? Or direct position?
-            // Direct position is tighter for non-physics implementations.
-            group.current.position.addScaledVector(moveDir, MOVE_SPEED * delta);
+            const speed = shift ? MOVE_SPEED * 1.5 : MOVE_SPEED;
+            const force = moveDir.multiplyScalar(speed * 200); // Stronger force
+            api.applyForce([force.x, 0, force.z], [0, 0, 0]);
 
-            // Rotate body
+            // Limit max horizontal speed
+            const horizontalVel = Math.sqrt(velocity.current[0]**2 + velocity.current[2]**2);
+            if (horizontalVel > speed) {
+                const scale = speed / horizontalVel;
+                api.velocity.set(velocity.current[0] * scale, velocity.current[1], velocity.current[2] * scale);
+            }
+
+            // Rotate character model towards movement direction
             const targetRot = Math.atan2(moveDir.x, moveDir.z);
-            const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRot);
-            group.current.quaternion.slerp(q, 0.15);
+            if (modelRef.current) {
+                modelRef.current.rotation.y = targetRot; // Rotate visual model
+            }
         }
 
-        // 3. Vertical Physics (Gravity)
-        velocity.current.y -= GRAVITY * delta;
-        group.current.position.y += velocity.current.y * delta;
-
-        // Floor Collision
-        if (group.current.position.y <= 0) {
-            group.current.position.y = 0;
-            velocity.current.y = 0;
-            isGrounded.current = true;
-            jumpCount.current = 0;
+        // Update camera
+        const pos = new THREE.Vector3(position.current[0], position.current[1], position.current[2]);
+        if (orbitRef.current) {
+            orbitRef.current.target.lerp(pos, 0.2);
+            orbitRef.current.update();
         }
 
-        // 4. Procedural Animations
-        const body = group.current.children[0];
-        if (body) {
-            // Bobbing only if grounded and moving
-            if (isGrounded.current && moving) {
-                body.position.y = 0.5 + Math.sin(state.clock.elapsedTime * 15) * 0.1;
-                body.rotation.x = THREE.MathUtils.lerp(body.rotation.x, 0.2, 0.1);
-            }
-            // Flying / Jumping pose
-            else if (!isGrounded.current) {
-                body.position.y = 0.5;
-                // Tilt back slightly when jumping?
-                body.rotation.x = THREE.MathUtils.lerp(body.rotation.x, -0.2, 0.1);
+        // Animation - single walking animation
+        if (names.length > 0 && actions[names[0]]) {
+            const walkAction = actions[names[0]];
 
-                // Spin if Double Jump? (TODO)
-                if (jumpCount.current === 2) {
-                    body.rotation.x += 10 * delta; // Front flip
-                }
-            }
-            // Idle
-            else {
-                body.position.y = 0.5 + Math.sin(state.clock.elapsedTime * 2) * 0.05;
-                body.rotation.x = THREE.MathUtils.lerp(body.rotation.x, 0, 0.1);
+            if (moving) {
+                // Play walking animation when moving
+                walkAction.timeScale = shift ? 1.5 : 1.0;
+            } else {
+                // Stop animation when idle (timeScale 0 = frozen on first frame)
+                walkAction.timeScale = 0;
             }
         }
     });
@@ -145,40 +165,11 @@ export const Player = forwardRef((props, ref) => {
                 maxPolarAngle={Math.PI / 2 - 0.1}
             />
 
-            <group ref={group} {...props} dispose={null}>
-                {/* Robot Container */}
-                <group position={[0, 0, 0]}>
-                    <mesh position={[0, 0, 0]}>
-                        <boxGeometry args={[0.5, 0.6, 0.3]} />
-                        <meshStandardMaterial color="#333" roughness={0.3} metalness={0.8} />
-                    </mesh>
-                    <mesh position={[0, 0.5, 0]}>
-                        <boxGeometry args={[0.35, 0.35, 0.35]} />
-                        <meshStandardMaterial color="#eee" roughness={0.2} metalness={0.5} />
-                    </mesh>
-                    <mesh position={[0, 0.5, 0.15]}>
-                        <boxGeometry args={[0.25, 0.08, 0.1]} />
-                        <meshStandardMaterial color="#00ff00" emissive="#00ff00" emissiveIntensity={2} />
-                    </mesh>
-                    <mesh position={[0, 0.8, 0]}>
-                        <cylinderGeometry args={[0.02, 0.02, 0.3]} />
-                        <meshStandardMaterial color="#888" />
-                    </mesh>
-                    <mesh position={[0, 1.0, 0]}>
-                        <sphereGeometry args={[0.04]} />
-                        <meshStandardMaterial color="red" emissive="red" emissiveIntensity={5} />
-                    </mesh>
+            <group ref={physicsRef} {...props} dispose={null}>
+                {/* Character Model */}
+                <group ref={modelRef} position={[0, -0.8, 0]}>
+                    <primitive object={clone} scale={1} castShadow receiveShadow />
                 </group>
-
-                {/* Fake Shadow (scales when jumping) */}
-                <mesh
-                    rotation={[-Math.PI / 2, 0, 0]}
-                    position={[0, 0.02, 0]}
-                    scale={1 / (Math.max(1, group.current?.position.y || 1))} // Shrink shadow when high
-                >
-                    <circleGeometry args={[0.4, 32]} />
-                    <meshBasicMaterial color="black" opacity={0.3} transparent depthWrite={false} />
-                </mesh>
             </group>
         </>
     );

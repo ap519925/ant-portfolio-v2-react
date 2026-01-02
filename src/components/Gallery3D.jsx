@@ -1,9 +1,10 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, Sparkles, Html } from '@react-three/drei';
+import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
+import { Float, Sparkles, Html, useTexture } from '@react-three/drei';
 import { useNavigate } from 'react-router-dom';
 import Player from './Player';
 import * as THREE from 'three';
+import { projects } from '../data/projects';
 
 // --- VISUAL ASSETS ---
 const Wall = (props) => (
@@ -18,44 +19,191 @@ const DreamFloor = () => (
         <planeGeometry args={[500, 500]} />
         <meshStandardMaterial color="#eecbf2" />
         <gridHelper args={[500, 50, '#ffffff', '#eecbf2']} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} />
+        <fog attach="fog" args={['#ffe4e1', 10, 50]} />
     </mesh>
 );
 
-// --- PROCEDURAL PROJECT ZONES (HTML LABELS) ---
-const ProjectZone = ({ position, color, title, description, icon }) => {
-    const [hovered, setHover] = useState(false);
+// --- SLIDESHOW COMPONENT ---
+const SlideshowScreen = ({ images, position, rotation, scale }) => {
+    const [index, setIndex] = useState(0);
+
+    // Safety check: ensure images exist
+    const validImages = useMemo(() => {
+        return (images && images.length > 0) ? images : ['/assets/stock-1.jpg']; // Fallback
+    }, [images]);
+
+    // Load textures (This might be heavy if many images, but let's try)
+    // We use a custom hook-like behavior or just standard TextureLoader.
+    // useTexture([arr]) expects absolute paths or public relative.
+
+    // To safe memory, we only load the CURRENT image? 
+    // Or simpler: Just simple Plane with texture content.
+
+    // We'll use a TextureLoader inside the component to handle the current image
+    const texture = useLoader(THREE.TextureLoader, validImages[index]);
+
+    useEffect(() => {
+        if (validImages.length <= 1) return;
+        const interval = setInterval(() => {
+            setIndex((prev) => (prev + 1) % validImages.length);
+        }, 3000); // 3 Seconds
+        return () => clearInterval(interval);
+    }, [validImages]);
+
     return (
-        <group position={position}>
-            {/* Title Label (HTML) */}
-            <Html position={[0, 4, 0]} center transform sprite zIndexRange={[100, 0]}>
+        <mesh position={position} rotation={rotation} scale={scale}>
+            <planeGeometry args={[1, 1]} />
+            <meshBasicMaterial map={texture} toneMapped={false} />
+        </mesh>
+    );
+};
+
+
+// --- THEMED PROJECT ZONES ---
+const ProjectZone = ({ position, project }) => {
+    const [hovered, setHover] = useState(false);
+    const color = project.color || '#888';
+
+    // Different Geometries based on Category/ID
+    const renderGeometry = () => {
+        // Prepare Gallery Images
+        // If gallery is empty, use main image
+        const gallery = (project.gallery && project.gallery.length > 0)
+            ? project.gallery
+            : (project.image ? [project.image] : []);
+
+        if (project.category.includes('AI') || project.id === 'capframe') {
+            // TECH STYLE (Floating Cubes + Screen)
+            return (
+                <group>
+                    <mesh position={[0, 1.5, 0]}>
+                        <boxGeometry args={[2.5, 2.5, 2.5]} />
+                        <meshStandardMaterial color={hovered ? '#ff8da1' : color} metalness={0.8} roughness={0.2} />
+                    </mesh>
+                    {/* Screen on Front Face */}
+                    {gallery.length > 0 && (
+                        <SlideshowScreen
+                            images={gallery}
+                            position={[0, 1.5, 1.26]}
+                            rotation={[0, 0, 0]}
+                            scale={[2, 1.5, 1]}
+                        />
+                    )}
+                </group>
+            );
+        } else if (project.category.includes('Web') || project.id === 'ibew-union') {
+            // SERVER STYLE (Pillars + Screen)
+            return (
+                <group>
+                    <mesh position={[-1, 2, 0]}>
+                        <boxGeometry args={[0.8, 4, 0.8]} />
+                        <meshStandardMaterial color={hovered ? '#4fa3ff' : color} />
+                    </mesh>
+                    <mesh position={[1, 1.5, 0]}>
+                        <boxGeometry args={[0.8, 3, 0.8]} />
+                        <meshStandardMaterial color={hovered ? '#4fa3ff' : color} />
+                    </mesh>
+                    {/* Screen floating between */}
+                    {gallery.length > 0 && (
+                        <SlideshowScreen
+                            images={gallery}
+                            position={[0, 2.5, 0]}
+                            rotation={[0, 0, 0]}
+                            scale={[1.8, 1.2, 1]}
+                        />
+                    )}
+                </group>
+            );
+        } else if (project.category.includes('Mobile') || project.id === 'prk-nyc') {
+            // PHONE STYLE (Screen IS projected)
+            return (
+                <group>
+                    <mesh position={[0, 2, 0]}>
+                        <boxGeometry args={[1.5, 3.5, 0.2]} />
+                        <meshStandardMaterial color="#333" />
+                    </mesh>
+                    {/* Screen content */}
+                    {gallery.length > 0 && (
+                        <SlideshowScreen
+                            images={gallery}
+                            position={[0, 2, 0.11]}
+                            rotation={[0, 0, 0]}
+                            scale={[1.3, 2.8, 1]}
+                        />
+                    )}
+                </group>
+            );
+        } else {
+            // FINANCE (Board)
+            return (
+                <group>
+                    <mesh position={[-1, 1, 0]}>
+                        <boxGeometry args={[0.8, 2, 0.8]} />
+                        <meshStandardMaterial color={color} />
+                    </mesh>
+                    <mesh position={[0, 1.5, 0]}>
+                        <boxGeometry args={[0.8, 3, 0.8]} />
+                        <meshStandardMaterial color={color} />
+                    </mesh>
+                    <mesh position={[1, 2, 0]}>
+                        <boxGeometry args={[0.8, 4, 0.8]} />
+                        <meshStandardMaterial color="#4caf50" />
+                    </mesh>
+                    {/* Billboard above */}
+                    {gallery.length > 0 && (
+                        <SlideshowScreen
+                            images={gallery}
+                            position={[0, 4, 0]}
+                            rotation={[0, 0, 0]}
+                            scale={[2.5, 1.5, 1]}
+                        />
+                    )}
+                </group>
+            );
+        }
+    };
+
+    return (
+        <group position={position}
+            onPointerOver={() => setHover(true)}
+            onPointerOut={() => setHover(false)}
+            onClick={() => setHover(!hovered)}
+        >
+            {/* Visual Floor Platform with Pulse */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
+                <ringGeometry args={[3, 3.5, 32]} />
+                <meshBasicMaterial color={color} opacity={0.6} transparent />
+            </mesh>
+
+            {/* Title Label */}
+            <Html position={[0, 5.5, 0]} center transform sprite zIndexRange={[100, 0]}>
                 <div style={{
-                    color: '#a855f7', fontSize: '24px', fontWeight: 'bold', fontFamily: 'sans-serif',
+                    color: color, fontSize: '24px', fontWeight: 'bold', fontFamily: 'sans-serif',
                     textShadow: '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff',
-                    pointerEvents: 'none', whiteSpace: 'nowrap'
+                    pointerEvents: 'none', whiteSpace: 'nowrap', textTransform: 'uppercase'
                 }}>
-                    {title}
+                    {project.title}
                 </div>
             </Html>
 
-            <mesh position={[0, 1.5, 0]} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)} onClick={() => setHover(!hovered)}>
-                <boxGeometry args={[3, 3, 3]} />
-                <meshStandardMaterial color={hovered ? '#d8b4fe' : color} />
-            </mesh>
-            <mesh position={[0, 3.5, 0]} rotation={[0, Math.PI / 4, 0]}>
-                <coneGeometry args={[2.5, 2, 4]} />
-                <meshStandardMaterial color="#333" />
-            </mesh>
+            {renderGeometry()}
 
             {/* Info Card */}
             {hovered && (
-                <Html position={[0, 2, 2]} center zIndexRange={[100, 0]}>
+                <Html position={[0, 2.5, 3]} center zIndexRange={[100, 0]}>
                     <div style={{
                         background: 'rgba(255,255,255,0.95)', padding: '15px', borderRadius: '10px',
-                        border: '2px solid #a855f7', width: '200px', textAlign: 'center', pointerEvents: 'none'
+                        border: `3px solid ${color}`, width: '240px', textAlign: 'center', pointerEvents: 'none',
+                        boxShadow: `0 0 15px ${color}`
                     }}>
-                        <div style={{ fontSize: '24px', marginBottom: '5px' }}>{icon}</div>
-                        <h4 style={{ margin: '0 0 5px 0', color: '#333' }}>{title}</h4>
-                        <p style={{ margin: '0', fontSize: '12px', color: '#666' }}>{description}</p>
+                        <h4 style={{ margin: '0 0 5px 0', color: color }}>{project.title}</h4>
+                        <div style={{
+                            display: 'inline-block', padding: '2px 8px', borderRadius: '10px',
+                            background: color, color: 'white', fontSize: '10px', marginBottom: '8px'
+                        }}>
+                            {project.category}
+                        </div>
+                        <p style={{ margin: '0', fontSize: '12px', color: '#333' }}>{project.description}</p>
                     </div>
                 </Html>
             )}
@@ -64,14 +212,18 @@ const ProjectZone = ({ position, color, title, description, icon }) => {
 };
 
 const Village = () => {
+    const capframe = projects.find(p => p.id === 'capframe');
+    const ibew = projects.find(p => p.id === 'ibew-union');
+    const prk = projects.find(p => p.id === 'prk-nyc');
+    const bearish = projects.find(p => p.id === 'bearish-bulls');
+
     const houses = useMemo(() => {
         const h = [];
-        for (let i = 0; i < 10; i++) {
-            const angle = (i / 10) * Math.PI * 2;
-            const r = 25 + Math.random() * 5;
+        for (let i = 0; i < 12; i++) {
+            const angle = (i / 12) * Math.PI * 2;
+            const r = 35 + Math.random() * 5;
             const x = Math.cos(angle) * r;
             const z = Math.sin(angle) * r;
-            if (Math.abs(x) < 10 || Math.abs(z) < 10) continue;
             h.push(
                 <group key={i} position={[x, 0, z]} rotation={[0, -angle + Math.PI / 2, 0]}>
                     <mesh position={[0, 1, 0]}><boxGeometry args={[2, 2, 2]} /><meshStandardMaterial color="#fff" /></mesh>
@@ -85,14 +237,14 @@ const Village = () => {
     return (
         <group>
             {houses}
-            <ProjectZone position={[-15, 0, -5]} color="#88ccff" title="E-COMMERCE" description="A full-stack shopping platform with Stripe integration." icon="🛒" />
-            <ProjectZone position={[15, 0, -5]} color="#ff88cc" title="SOCIAL APP" description="Real-time chat and media sharing platform." icon="💬" />
-            <ProjectZone position={[0, 0, -20]} color="#88ffcc" title="DATA VIZ" description="Interactive dashboards for complex datasets." icon="📊" />
+            {capframe && <ProjectZone position={[-15, 0, -5]} project={capframe} />}
+            {ibew && <ProjectZone position={[15, 0, -5]} project={ibew} />}
+            {prk && <ProjectZone position={[0, 0, -20]} project={prk} />}
+            {bearish && <ProjectZone position={[20, 0, 10]} project={bearish} />}
         </group>
     );
 };
 
-// --- ROBOT GUIDE ---
 const RobotDog = () => {
     const group = useRef();
     useFrame((state) => {
@@ -120,16 +272,13 @@ const RobotDog = () => {
 const DogGuide = ({ active, playerPosition }) => {
     const group = useRef();
     const [chatStep, setChatStep] = useState(0);
-
     useEffect(() => {
         if (active && group.current && playerPosition) {
             group.current.position.set(playerPosition.x + 2, 0, playerPosition.z + 2);
             group.current.lookAt(playerPosition.x, 0, playerPosition.z);
         }
     }, [active, playerPosition]);
-
     if (!active) return null;
-
     return (
         <group ref={group}>
             <RobotDog />
@@ -261,15 +410,15 @@ const GalleryScene = () => {
 
     return (
         <div style={{ width: '100vw', height: '100vh', background: '#ffe4e1', overflow: 'hidden' }}>
-            {/* HUD - FAST TRAVEL */}
             <div style={{
                 position: 'absolute', top: 20, left: 20, zIndex: 10,
                 display: 'flex', gap: '10px'
             }}>
                 <button onClick={() => teleportTo(0, 8)} style={hudBtn}>🏠 Base</button>
-                <button onClick={() => teleportTo(-15, -5)} style={hudBtn}>🛒 Shop</button>
-                <button onClick={() => teleportTo(15, -5)} style={hudBtn}>💬 Social</button>
-                <button onClick={() => teleportTo(0, -20)} style={hudBtn}>📊 Data</button>
+                <button onClick={() => teleportTo(-15, -5)} style={hudBtn}>🤖 Al</button>
+                <button onClick={() => teleportTo(15, -5)} style={hudBtn}>⚡ Web</button>
+                <button onClick={() => teleportTo(0, -20)} style={hudBtn}>🚗 App</button>
+                <button onClick={() => teleportTo(20, 10)} style={hudBtn}>📈 Fin</button>
             </div>
 
             <div style={{
