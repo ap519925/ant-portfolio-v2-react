@@ -1,39 +1,37 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { useFrame, useThree, useGraph } from '@react-three/fiber';
-import { useFBX, useAnimations, Html } from '@react-three/drei'; // Switch to useFBX
+import { useGLTF, useAnimations, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { SkeletonUtils } from 'three-stdlib';
 
-const MODEL_PATH = '/assets/dog-run.fbx';
-
-// Preload
-useFBX.preload(MODEL_PATH);
+// Meshy AI Model with Merged Animations
+const MODEL_PATH = '/assets/dog-final.glb';
+useGLTF.preload(MODEL_PATH);
 
 export const Player = (props) => {
     const group = useRef();
-
-    // Load FBX
-    const fbx = useFBX(MODEL_PATH);
-    const { animations } = fbx;
-
-    // Clone scene using SkeletonUtils to allow multiple instances
-    const clone = useMemo(() => SkeletonUtils.clone(fbx), [fbx]);
-
+    const { scene, animations } = useGLTF(MODEL_PATH);
     const { actions, names } = useAnimations(animations, group);
-    const [debugInfo, setDebugInfo] = useState("Loading FBX...");
+    const [debugInfo, setDebugInfo] = useState("Loading...");
 
-    // Debug Animations
+    // Debug & Animation Logic
     useEffect(() => {
         if (!names || names.length === 0) {
-            setDebugInfo("No Animations in FBX!");
+            setDebugInfo("No Animations Found!");
         } else {
-            setDebugInfo("Anims: " + names.join(", "));
-            // Auto play first
-            const action = actions[names[0]];
-            if (action) action.reset().play();
+            console.log("Found Animations:", names);
+            setDebugInfo("Found: " + names.join(", "));
+
+            // Try to find Idle/Run
+            const idleAnim = names.find(n => n.toLowerCase().includes('idle')) || names[0];
+            const action = actions[idleAnim];
+            if (action) action.reset().fadeIn(0.5).play();
         }
     }, [names, actions]);
 
+    const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+
+    // State
     const [position, setPosition] = useState([0, 0, 5]);
     const [rotation, setRotation] = useState([0, Math.PI, 0]);
     const keys = useRef({ w: false, a: false, s: false, d: false, shift: false });
@@ -60,20 +58,37 @@ export const Player = (props) => {
         const { w, s, shift } = keys.current;
         const moving = w || s;
 
-        // Play/Speed
-        const action = actions[names[0]];
-        if (action) {
+        // Animation Switching
+        // Heuristic: If we have >1 anims, try to switch.
+        // Meshy output usually has: 'Idle', 'Run', 'Walk'?
+        // If names are weird (e.g. 'animation_0'), we default to [0] and [1].
+        if (names.length > 1) {
+            const idleName = names.find(n => n.toLowerCase().includes('idle')) || names[0];
+            const moveName = names.find(n => n.toLowerCase().includes('run') || n.toLowerCase().includes('walk')) || names[1] || names[0];
+
+            const idleAction = actions[idleName];
+            const moveAction = actions[moveName];
+
             if (moving) {
-                if (!action.isRunning()) action.reset().fadeIn(0.2).play();
-                action.timeScale = shift ? 1.5 : 1.0;
+                if (idleAction && idleAction.isRunning()) idleAction.fadeOut(0.2);
+                if (moveAction && !moveAction.isRunning()) {
+                    moveAction.reset().fadeIn(0.2).play();
+                }
+                if (moveAction) moveAction.timeScale = shift ? 1.5 : 1.0;
             } else {
-                // If not moving, fade out? Or pause on first frame?
-                // For now let it run if it's idle, or stop if it's run.
-                // Assuming single clip is 'Run', we stop it.
-                action.fadeOut(0.2);
+                if (moveAction && moveAction.isRunning()) moveAction.fadeOut(0.2);
+                if (idleAction && !idleAction.isRunning()) {
+                    idleAction.reset().fadeIn(0.2).play();
+                }
             }
+        } else if (names.length === 1) {
+            // Single Animation handling (Always play, maybe speed up?)
+            const action = actions[names[0]];
+            if (moving) action.timeScale = shift ? 1.5 : 1.0;
+            else action.timeScale = 1.0; // Play normally if idle?
         }
 
+        // --- Movement Logic ---
         if (!group.current) return;
 
         let rotY = rotation[1];
@@ -110,11 +125,11 @@ export const Player = (props) => {
 
     return (
         <group ref={group} {...props} dispose={null}>
-            {/* FBX needs scaling usually. Assuming 0.01 for cm -> m conversion */}
-            <primitive object={clone} scale={0.01} />
+            {/* Standard scale logic often needs adjustment for Meshy models */}
+            <primitive object={clone} scale={1.5} />
 
-            <Html position={[0, 2, 0]}>
-                <div style={{ background: 'black', color: 'cyan', padding: '5px', borderRadius: '4px', fontSize: '10px' }}>
+            <Html position={[0, 2.5, 0]}>
+                <div style={{ background: 'black', color: 'lime', padding: '5px', borderRadius: '4px', fontSize: '10px', whiteSpace: 'nowrap' }}>
                     {debugInfo}
                 </div>
             </Html>
