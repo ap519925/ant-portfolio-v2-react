@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Player from './Player';
 import * as THREE from 'three';
 import { projects } from '../data/projects';
+import SpotifyWidget3D from './SpotifyWidget3D';
 
 // --- VISUAL ASSETS ---
 const Wall = (props) => (
@@ -19,18 +20,21 @@ const DreamFloor = () => (
         <planeGeometry args={[500, 500]} />
         <meshStandardMaterial color="#eecbf2" />
         <gridHelper args={[500, 50, '#ffffff', '#eecbf2']} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} />
-        <fog attach="fog" args={['#ffe4e1', 10, 50]} />
+        <fog attach="fog" args={['#ffe4e1', 10, 80]} />
+    </mesh>
+);
+
+const Road = ({ position, rotation, length, width = 8 }) => (
+    <mesh rotation={[-Math.PI / 2, 0, rotation || 0]} position={[position[0], 0.01, position[2]]}>
+        <planeGeometry args={[width, length]} />
+        <meshStandardMaterial color="#d8b4fe" roughness={0.8} />
     </mesh>
 );
 
 // --- SLIDESHOW (SAFE MODE) ---
-// Uses Drei's Image component which handles loading gracefully
 const SlideshowScreen = ({ images, position, rotation, scale }) => {
     const [index, setIndex] = useState(0);
-
-    // Fallback if no images
     const activeImage = (images && images.length > 0) ? images[index] : '/assets/stock-1.jpg';
-
     useEffect(() => {
         if (!images || images.length <= 1) return;
         const interval = setInterval(() => {
@@ -38,58 +42,48 @@ const SlideshowScreen = ({ images, position, rotation, scale }) => {
         }, 3000);
         return () => clearInterval(interval);
     }, [images]);
-
     return (
         <group position={position} rotation={rotation} scale={scale}>
-            {/* Use Drei Image for safe async loading */}
-            {/* url must be valid. If it fails, Drei Image usually shows white or transparent */}
-            <DreiImage url={activeImage} transparent opacity={0.9} toneMapped={false} />
+            <DreiImage url={activeImage} transparent opacity={0.95} toneMapped={false} />
         </group>
     );
 };
-
 
 const ProjectZone = ({ position, project }) => {
     const [hovered, setHover] = useState(false);
     const color = project.color || '#888';
 
     const renderGeometry = () => {
-        const gallery = (project.gallery && project.gallery.length > 0)
-            ? project.gallery
-            : (project.image ? [project.image] : []);
-
+        const gallery = (project.gallery && project.gallery.length > 0) ? project.gallery : (project.image ? [project.image] : []);
         if (project.category.includes('AI') || project.id === 'capframe') {
             return (
                 <group>
-                    <mesh position={[0, 1.5, 0]}>
-                        <boxGeometry args={[2.5, 2.5, 2.5]} />
-                        <meshStandardMaterial color={hovered ? '#ff8da1' : color} metalness={0.8} roughness={0.2} />
-                    </mesh>
-                    {gallery.length > 0 && <SlideshowScreen images={gallery} position={[0, 1.5, 1.26]} rotation={[0, 0, 0]} scale={[2, 1.5, 1]} />}
+                    <mesh position={[0, 1.5, 0]}><boxGeometry args={[4, 4, 4]} /><meshStandardMaterial color={hovered ? '#ff8da1' : color} metalness={0.8} roughness={0.2} /></mesh>
+                    {gallery.length > 0 && <SlideshowScreen images={gallery} position={[0, 1.5, 2.05]} rotation={[0, 0, 0]} scale={[3.5, 2.5, 1]} />}
                 </group>
             );
         } else if (project.category.includes('Web') || project.id === 'ibew-union') {
             return (
                 <group>
-                    <mesh position={[-1, 2, 0]}><boxGeometry args={[0.8, 4, 0.8]} /><meshStandardMaterial color={hovered ? '#4fa3ff' : color} /></mesh>
-                    <mesh position={[1, 1.5, 0]}><boxGeometry args={[0.8, 3, 0.8]} /><meshStandardMaterial color={hovered ? '#4fa3ff' : color} /></mesh>
-                    {gallery.length > 0 && <SlideshowScreen images={gallery} position={[0, 2.5, 0]} rotation={[0, 0, 0]} scale={[1.8, 1.2, 1]} />}
+                    <mesh position={[-1.5, 3, 0]}><boxGeometry args={[1.2, 6, 1.2]} /><meshStandardMaterial color={hovered ? '#4fa3ff' : color} /></mesh>
+                    <mesh position={[1.5, 2.5, 0]}><boxGeometry args={[1.2, 5, 1.2]} /><meshStandardMaterial color={hovered ? '#4fa3ff' : color} /></mesh>
+                    {gallery.length > 0 && <SlideshowScreen images={gallery} position={[0, 3, 0]} rotation={[0, 0, 0]} scale={[2.5, 1.8, 1]} />}
                 </group>
             );
         } else if (project.category.includes('Mobile') || project.id === 'prk-nyc') {
             return (
                 <group>
-                    <mesh position={[0, 2, 0]}><boxGeometry args={[1.5, 3.5, 0.2]} /><meshStandardMaterial color="#333" /></mesh>
-                    {gallery.length > 0 && <SlideshowScreen images={gallery} position={[0, 2, 0.11]} rotation={[0, 0, 0]} scale={[1.3, 2.8, 1]} />}
+                    <mesh position={[0, 3, 0]}><boxGeometry args={[2.5, 5, 0.3]} /><meshStandardMaterial color="#333" /></mesh>
+                    {gallery.length > 0 && <SlideshowScreen images={gallery} position={[0, 3, 0.16]} rotation={[0, 0, 0]} scale={[2.3, 4, 1]} />}
                 </group>
             );
         } else {
             return (
                 <group>
-                    <mesh position={[-1, 1, 0]}><boxGeometry args={[0.8, 2, 0.8]} /><meshStandardMaterial color={color} /></mesh>
-                    <mesh position={[0, 1.5, 0]}><boxGeometry args={[0.8, 3, 0.8]} /><meshStandardMaterial color={color} /></mesh>
-                    <mesh position={[1, 2, 0]}><boxGeometry args={[0.8, 4, 0.8]} /><meshStandardMaterial color="#4caf50" /></mesh>
-                    {gallery.length > 0 && <SlideshowScreen images={gallery} position={[0, 4, 0]} rotation={[0, 0, 0]} scale={[2.5, 1.5, 1]} />}
+                    <mesh position={[-1.5, 2, 0]}><boxGeometry args={[1.2, 4, 1.2]} /><meshStandardMaterial color={color} /></mesh>
+                    <mesh position={[0, 3, 0]}><boxGeometry args={[1.2, 6, 1.2]} /><meshStandardMaterial color={color} /></mesh>
+                    <mesh position={[1.5, 4, 0]}><boxGeometry args={[1.2, 8, 1.2]} /><meshStandardMaterial color="#4caf50" /></mesh>
+                    {gallery.length > 0 && <SlideshowScreen images={gallery} position={[0, 5, 1.5]} rotation={[0, 0, 0]} scale={[4, 2.5, 1]} />}
                 </group>
             );
         }
@@ -97,14 +91,15 @@ const ProjectZone = ({ position, project }) => {
 
     return (
         <group position={position} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)} onClick={() => setHover(!hovered)}>
+            {/* Larger Floor Platform */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
-                <ringGeometry args={[3, 3.5, 32]} />
+                <ringGeometry args={[4, 5, 32]} />
                 <meshBasicMaterial color={color} opacity={0.6} transparent />
             </mesh>
-            <Html position={[0, 5.5, 0]} center transform sprite zIndexRange={[100, 0]}>
+            <Html position={[0, 7, 0]} center transform sprite zIndexRange={[100, 0]}>
                 <div style={{
-                    color: color, fontSize: '24px', fontWeight: 'bold', fontFamily: 'sans-serif',
-                    textShadow: '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff',
+                    color: color, fontSize: '32px', fontWeight: 'bold', fontFamily: 'sans-serif',
+                    textShadow: '-2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff',
                     pointerEvents: 'none', whiteSpace: 'nowrap', textTransform: 'uppercase'
                 }}>
                     {project.title}
@@ -112,20 +107,15 @@ const ProjectZone = ({ position, project }) => {
             </Html>
             {renderGeometry()}
             {hovered && (
-                <Html position={[0, 2.5, 3]} center zIndexRange={[100, 0]}>
+                <Html position={[0, 3, 4]} center zIndexRange={[100, 0]}>
                     <div style={{
-                        background: 'rgba(255,255,255,0.95)', padding: '15px', borderRadius: '10px',
-                        border: `3px solid ${color}`, width: '240px', textAlign: 'center', pointerEvents: 'none',
-                        boxShadow: `0 0 15px ${color}`
+                        background: 'rgba(255,255,255,0.95)', padding: '20px', borderRadius: '15px',
+                        border: `3px solid ${color}`, width: '280px', textAlign: 'center', pointerEvents: 'none',
+                        boxShadow: `0 0 20px ${color}`
                     }}>
-                        <h4 style={{ margin: '0 0 5px 0', color: color }}>{project.title}</h4>
-                        <div style={{
-                            display: 'inline-block', padding: '2px 8px', borderRadius: '10px',
-                            background: color, color: 'white', fontSize: '10px', marginBottom: '8px'
-                        }}>
-                            {project.category}
-                        </div>
-                        <p style={{ margin: '0', fontSize: '12px', color: '#333' }}>{project.description}</p>
+                        <h3 style={{ margin: '0 0 5px 0', color: color }}>{project.title}</h3>
+                        <div style={{ display: 'inline-block', padding: '4px 10px', borderRadius: '15px', background: color, color: 'white', fontSize: '12px', marginBottom: '10px' }}>{project.category}</div>
+                        <p style={{ margin: '0', fontSize: '14px', color: '#333' }}>{project.description}</p>
                     </div>
                 </Html>
             )}
@@ -133,42 +123,80 @@ const ProjectZone = ({ position, project }) => {
     );
 };
 
-// ... Village, RobotDog, DogGuide (UNCHANGED but re-rendering needed for write_to_file) ...
-
+// ... Village, RobotDog, etc ...
 const Village = () => {
     const capframe = projects.find(p => p.id === 'capframe');
     const ibew = projects.find(p => p.id === 'ibew-union');
     const prk = projects.find(p => p.id === 'prk-nyc');
     const bearish = projects.find(p => p.id === 'bearish-bulls');
 
-    const houses = useMemo(() => {
-        const h = [];
-        for (let i = 0; i < 12; i++) {
-            const angle = (i / 12) * Math.PI * 2;
-            const r = 35 + Math.random() * 5;
-            const x = Math.cos(angle) * r;
-            const z = Math.sin(angle) * r;
-            h.push(
-                <group key={i} position={[x, 0, z]} rotation={[0, -angle + Math.PI / 2, 0]}>
-                    <mesh position={[0, 1, 0]}><boxGeometry args={[2, 2, 2]} /><meshStandardMaterial color="#fff" /></mesh>
-                    <mesh position={[0, 2.5, 0]} rotation={[0, Math.PI / 4, 0]}><coneGeometry args={[1.8, 1.5, 4]} /><meshStandardMaterial color="#ffdac1" /></mesh>
+    // Generate City Blocks (Quadrants)
+    const buildings = useMemo(() => {
+        const b = [];
+        // Place decorative buildings in the 4 quadrants, away from roads
+        // Quadrants: (+x, +z), (+x, -z), (-x, +z), (-x, -z)
+        // Roads are at x=0 (width 8) and z=0 (width 8)
+
+        for (let i = 0; i < 40; i++) {
+            // Random quadrant
+            const qx = Math.random() > 0.5 ? 1 : -1;
+            const qz = Math.random() > 0.5 ? 1 : -1;
+
+            // Pos
+            const x = (10 + Math.random() * 40) * qx;
+            const z = (10 + Math.random() * 40) * qz;
+
+            const scale = 1 + Math.random() * 2;
+            const height = 2 + Math.random() * 6;
+
+            b.push(
+                <group key={i} position={[x, 0, z]}>
+                    <mesh position={[0, height / 2, 0]}>
+                        <boxGeometry args={[scale * 2, height, scale * 2]} />
+                        <meshStandardMaterial color="#ffffff" />
+                    </mesh>
+                    {/* Roof */}
+                    <mesh position={[0, height + scale / 2, 0]} rotation={[0, Math.PI / 4, 0]}>
+                        <coneGeometry args={[scale * 1.5, scale, 4]} />
+                        <meshStandardMaterial color={`hsl(${Math.random() * 360}, 70%, 80%)`} />
+                    </mesh>
                 </group>
             );
         }
-        return h;
+        return b;
     }, []);
 
     return (
         <group>
-            {houses}
-            {capframe && <ProjectZone position={[-15, 0, -5]} project={capframe} />}
-            {ibew && <ProjectZone position={[15, 0, -5]} project={ibew} />}
-            {prk && <ProjectZone position={[0, 0, -20]} project={prk} />}
-            {bearish && <ProjectZone position={[20, 0, 10]} project={bearish} />}
+            {/* CROSSROADS CITY LAYOUT */}
+            <Road position={[0, 0, 0]} length={150} width={8} /> {/* North-South */}
+            <Road position={[0, 0, 0]} rotation={Math.PI / 2} length={150} width={8} /> {/* East-West */}
+
+            <mesh position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                <circleGeometry args={[12, 32]} />
+                <meshStandardMaterial color="#e0c0ff" />
+            </mesh>
+
+            {buildings}
+
+            {/* ZONES spread out at ends of roads (Dis 50) */}
+            {/* North (-Z) */}
+            {prk && <ProjectZone position={[0, 0, -50]} project={prk} />}
+
+            {/* South (+Z) */}
+            {bearish && <ProjectZone position={[0, 0, 50]} project={bearish} />}
+
+            {/* West (-X) */}
+            {capframe && <ProjectZone position={[-50, 0, 0]} project={capframe} />}
+
+            {/* East (+X) */}
+            {ibew && <ProjectZone position={[50, 0, 0]} project={ibew} />}
+
         </group>
     );
 };
 
+// ... RobotDog, DogGuide (UNCHANGED) ...
 const RobotDog = () => {
     const group = useRef();
     useFrame((state) => {
@@ -339,17 +367,17 @@ const GalleryScene = () => {
                 display: 'flex', gap: '10px'
             }}>
                 <button onClick={() => teleportTo(0, 8)} style={hudBtn}>🏠 Base</button>
-                <button onClick={() => teleportTo(-15, -5)} style={hudBtn}>🤖 Al</button>
-                <button onClick={() => teleportTo(15, -5)} style={hudBtn}>⚡ Web</button>
-                <button onClick={() => teleportTo(0, -20)} style={hudBtn}>🚗 App</button>
-                <button onClick={() => teleportTo(20, 10)} style={hudBtn}>📈 Fin</button>
+                <button onClick={() => teleportTo(-50, 0)} style={hudBtn}>🤖 Al</button> {/* Updated Coords */}
+                <button onClick={() => teleportTo(50, 0)} style={hudBtn}>⚡ Web</button>
+                <button onClick={() => teleportTo(0, -50)} style={hudBtn}>🚗 App</button>
+                <button onClick={() => teleportTo(0, 50)} style={hudBtn}>📈 Fin</button>
             </div>
 
             <div style={{
                 position: 'absolute', bottom: 30, left: 30, color: 'rgba(100,100,100,0.8)', zIndex: 10,
                 fontFamily: 'Exo 2', pointerEvents: 'none'
             }}>
-                <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>PORTFOLIO WORLD</div>
+                <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>PORTFOLIO CITY</div>
                 <div>Collected: {score}</div>
             </div>
 
@@ -368,13 +396,12 @@ const GalleryScene = () => {
                 </button>
             )}
 
-            <Canvas camera={{ position: [0, 5, 12], fov: 60 }} gl={{ antialias: true }}>
-                {/* SUSPENSE BOUNDARY ADDED TO PREVENT LOADING CRASHES */}
-                <Suspense fallback={<Html center>Loading World...</Html>}>
+            <Canvas camera={{ position: [0, 10, 20], fov: 60 }} gl={{ antialias: true }}>
+                <Suspense fallback={<Html center>Loading City...</Html>}>
                     <color attach="background" args={['#ffe4e1']} />
                     <ambientLight intensity={1.0} color="#fff" />
-                    <directionalLight position={[10, 20, 10]} intensity={1.5} color="#fff" />
-                    <Sparkles count={50} scale={40} size={5} speed={0.4} opacity={0.5} color="#fff" />
+                    <directionalLight position={[20, 50, 20]} intensity={1.5} color="#fff" />
+                    <Sparkles count={100} scale={100} size={8} speed={0.4} opacity={0.5} color="#fff" />
 
                     <Player ref={playerRef} position={[0, 0, 8]} />
                     <CollectiblesManager playerRef={playerRef} setScore={setScore} />
@@ -382,14 +409,13 @@ const GalleryScene = () => {
 
                     <Village />
 
+                    {/* RESTORED SPOTIFY WIDGET */}
+                    <SpotifyWidget3D position={[-12, 4, 12]} />
+
                     <DogGuide active={dogActive} playerPosition={playerPosForDog} />
 
                     <group position={[0, 0, 0]}>
-                        <Wall position={[0, 2.5, -10]} width={20} height={10} />
-                        <Wall position={[-10, 2.5, 0]} rotation={[0, Math.PI / 2, 0]} width={20} height={10} />
-                        <Wall position={[10, 2.5, 0]} rotation={[0, -Math.PI / 2, 0]} width={20} height={10} />
-                        <Wall position={[-6, 2.5, 10]} width={8} height={10} />
-                        <Wall position={[6, 2.5, 10]} width={8} height={10} />
+                        {/* Removed Walls for Open City Feel */}
                     </group>
                 </Suspense>
             </Canvas>
