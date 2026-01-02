@@ -1,48 +1,43 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
+import React, { useRef, useEffect, useState, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF, useAnimations, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { SkeletonUtils } from 'three-stdlib';
 
-// RESTORING COMPRESSED DOG MODEL (6.4MB)
-// It works! It just needed light.
 const MODEL_PATH = '/assets/dog-compressed.glb';
 
-export const Player = (props) => {
+export const Player = forwardRef((props, ref) => {
     const group = useRef();
+
+    // Expose group ref to parent
+    useImperativeHandle(ref, () => group.current);
+
     const { scene, animations } = useGLTF(MODEL_PATH);
     const { actions, names } = useAnimations(animations, group);
-    const [debugInfo, setDebugInfo] = useState("Loading Model...");
+    const [debugInfo, setDebugInfo] = useState("");
 
-    // Clone & Setup Material
     const clone = useMemo(() => {
         const c = SkeletonUtils.clone(scene);
         c.traverse((o) => {
             if (o.isMesh) {
                 o.castShadow = true;
                 o.receiveShadow = true;
-                // Tint purple if texture missing
                 if (!o.material.map) o.material.color.set('#a855f7');
-                // Ensure material reacts to light
-                o.material.needsUpdate = true;
             }
         });
         return c;
     }, [scene]);
 
-    // Animation Logic
     useEffect(() => {
         if (!names || names.length === 0) setDebugInfo("No Anims");
         else {
-            setDebugInfo("");
-            // Auto-play Idle
             const idle = names.find(n => n.toLowerCase().includes('idle')) || names[0];
             const action = actions[idle];
             if (action) action.reset().play();
         }
     }, [names, actions]);
 
-    const [position, setPosition] = useState([0, 0, 5]); // Start point
+    const [position, setPosition] = useState([0, 0, 5]);
     const [rotation, setRotation] = useState([0, Math.PI, 0]);
     const keys = useRef({ w: false, a: false, s: false, d: false, shift: false });
     const { camera } = useThree();
@@ -67,11 +62,10 @@ export const Player = (props) => {
         const { w, s, shift } = keys.current;
         const moving = w || s;
 
-        // Animation Switch
+        // Anims
         if (names.length > 0) {
             const runKey = names.find(n => n.toLowerCase().includes('run') || n.toLowerCase().includes('walk')) || names[1] || names[0];
             const idleKey = names.find(n => n.toLowerCase().includes('idle')) || names[0];
-
             const runAct = actions[runKey];
             const idleAct = actions[idleKey];
 
@@ -110,7 +104,6 @@ export const Player = (props) => {
         group.current.position.set(newPos[0], newPos[1], newPos[2]);
         group.current.rotation.set(0, rotY, 0);
 
-        // Third Person Camera
         const camDist = 5;
         const camHeight = 3;
         const targetCamX = newPos[0] - Math.sin(rotY) * camDist;
@@ -123,13 +116,9 @@ export const Player = (props) => {
     return (
         <group ref={group} {...props} dispose={null}>
             <primitive object={clone} scale={1.5} />
-            {/* Optional Shadow blob if shadows are off */}
-            {/* <mesh rotation={[-Math.PI/2,0,0]} position={[0,0,0]}>
-                 <circleGeometry args={[0.5, 32]} />
-                 <meshBasicMaterial color="black" opacity={0.5} transparent />
-             </mesh> */}
+            {debugInfo && <Html position={[0, 2, 0]}><div style={{ background: 'black', color: 'white', fontSize: 10 }}>{debugInfo}</div></Html>}
         </group>
     );
-};
+});
 
 export default Player;
