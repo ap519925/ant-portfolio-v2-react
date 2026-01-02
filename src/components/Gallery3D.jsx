@@ -1,6 +1,6 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, Sparkles, useGLTF, Html, useAnimations } from '@react-three/drei';
+import { Float, Sparkles, Html, useAnimations } from '@react-three/drei';
 import { useNavigate } from 'react-router-dom';
 import Player from './Player';
 import * as THREE from 'three';
@@ -21,7 +21,6 @@ const DreamFloor = () => (
     </mesh>
 );
 
-// --- PROCEDURAL HOUSES ---
 const House = ({ position, rotation }) => {
     const color = useMemo(() => ['#ffb7b2', '#ffdac1', '#e2f0cb', '#b5ead7', '#c7ceea'][Math.floor(Math.random() * 5)], []);
     return (
@@ -45,65 +44,101 @@ const Village = () => {
     return <group>{houses}</group>;
 };
 
-// --- DOG GUIDE NPC ---
-const DOG_MODEL = '/assets/dog-suit-opt.glb'; // 2.2MB Version
+// --- PROCEDURAL ROBOT DOG (STABLE) ---
+// Replaces the crashing GLB model
+const RobotDog = () => {
+    const group = useRef();
+    useFrame((state) => {
+        if (group.current) {
+            // Breathe
+            group.current.position.y = Math.sin(state.clock.elapsedTime * 3) * 0.05;
+            // Wag tail
+            const tail = group.current.getObjectByName("tail");
+            if (tail) tail.rotation.z = Math.sin(state.clock.elapsedTime * 10) * 0.2;
+        }
+    });
+
+    return (
+        <group ref={group}>
+            {/* Body */}
+            <mesh position={[0, 0.4, 0]}>
+                <boxGeometry args={[0.4, 0.4, 0.6]} />
+                <meshStandardMaterial color="#a855f7" />
+            </mesh>
+            {/* Head */}
+            <mesh position={[0, 0.7, 0.4]}>
+                <boxGeometry args={[0.3, 0.3, 0.3]} />
+                <meshStandardMaterial color="#ddd" />
+            </mesh>
+            {/* Ears */}
+            <mesh position={[0.15, 0.9, 0.4]} rotation={[0, 0, -0.2]}>
+                <boxGeometry args={[0.1, 0.2, 0.1]} />
+                <meshStandardMaterial color="#a855f7" />
+            </mesh>
+            <mesh position={[-0.15, 0.9, 0.4]} rotation={[0, 0, 0.2]}>
+                <boxGeometry args={[0.1, 0.2, 0.1]} />
+                <meshStandardMaterial color="#a855f7" />
+            </mesh>
+            {/* Tail */}
+            <mesh name="tail" position={[0, 0.6, -0.3]}>
+                <boxGeometry args={[0.1, 0.1, 0.4]} />
+                <meshStandardMaterial color="#a855f7" />
+            </mesh>
+            {/* Legs */}
+            <mesh position={[0.15, 0.2, 0.2]}><boxGeometry args={[0.1, 0.4, 0.1]} /><meshStandardMaterial color="#333" /></mesh>
+            <mesh position={[-0.15, 0.2, 0.2]}><boxGeometry args={[0.1, 0.4, 0.1]} /><meshStandardMaterial color="#333" /></mesh>
+            <mesh position={[0.15, 0.2, -0.2]}><boxGeometry args={[0.1, 0.4, 0.1]} /><meshStandardMaterial color="#333" /></mesh>
+            <mesh position={[-0.15, 0.2, -0.2]}><boxGeometry args={[0.1, 0.4, 0.1]} /><meshStandardMaterial color="#333" /></mesh>
+        </group>
+    );
+};
 
 const DogGuide = ({ active, playerPosition }) => {
     const group = useRef();
-    const { scene, animations } = useGLTF(DOG_MODEL);
-    const { actions } = useAnimations(animations, group);
     const [chatStep, setChatStep] = useState(0);
 
-    // Initial Spawn Logic
     useEffect(() => {
         if (active && group.current && playerPosition) {
-            // Teleport in front of player
-            // Simplified: Just 2 units Z+ for now, ideally calc forward vector
             group.current.position.set(playerPosition.x + 2, 0, playerPosition.z + 2);
             group.current.lookAt(playerPosition.x, 0, playerPosition.z);
-
-            // Play idle/wave animation if exists
-            if (actions && actions[Object.keys(actions)[0]]) {
-                actions[Object.keys(actions)[0]].play();
-            }
         }
-    }, [active, playerPosition, actions]);
+    }, [active, playerPosition]);
 
     if (!active) return null;
 
     return (
         <group ref={group}>
-            <primitive object={scene} scale={1.2} />
-            <Html position={[0, 2.5, 0]} center>
+            <RobotDog />
+            <Html position={[0, 2, 0]} center>
                 <div style={{
-                    background: 'rgba(255,255,255,0.9)', padding: '15px', borderRadius: '15px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)', minWidth: '200px', textAlign: 'center',
-                    fontFamily: 'sans-serif', border: '2px solid #a855f7'
+                    background: 'rgba(255,255,255,0.95)', padding: '15px', borderRadius: '15px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)', minWidth: '220px', textAlign: 'center',
+                    fontFamily: 'sans-serif', border: '2px solid #a855f7', pointerEvents: 'auto'
                 }}>
-                    <h4 style={{ margin: '0 0 5px 0', color: '#a855f7' }}>🐶 Sir Barks-a-Lot</h4>
+                    <h4 style={{ margin: '0 0 5px 0', color: '#a855f7' }}>🤖 Robo-Dog Guide</h4>
                     {chatStep === 0 && (
                         <>
-                            <p style={{ margin: '0 0 10px 0', fontSize: '12px' }}>Hello! I am your guide. How can I help?</p>
-                            <button onClick={() => setChatStep(1)} style={btnStyle}>About Anthony</button>
-                            <button onClick={() => setChatStep(2)} style={btnStyle}>View Projects</button>
-                            <button onClick={() => setChatStep(3)} style={btnStyle}>Contact Info</button>
+                            <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333' }}>Woof! Need help?</p>
+                            <button onClick={() => setChatStep(1)} style={btnStyle}>Who is Anthony?</button>
+                            <button onClick={() => setChatStep(2)} style={btnStyle}>What can I do?</button>
+                            <button onClick={() => setChatStep(3)} style={btnStyle}>Contact</button>
                         </>
                     )}
                     {chatStep === 1 && (
                         <>
-                            <p style={{ margin: '0 0 10px 0', fontSize: '12px' }}>Anthony is a Full Stack Developer specializing in React, Drupal, and 3D Web Experiences!</p>
+                            <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#333' }}>Anthony is a creative developer who loves 3D web tech!</p>
                             <button onClick={() => setChatStep(0)} style={btnStyle}>Back</button>
                         </>
                     )}
                     {chatStep === 2 && (
                         <>
-                            <p style={{ margin: '0 0 10px 0', fontSize: '12px' }}>Explore the gallery walls to see the projects interactively!</p>
+                            <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#333' }}>Jump with Space! Collect floating items! Explore the Village!</p>
                             <button onClick={() => setChatStep(0)} style={btnStyle}>Back</button>
                         </>
                     )}
                     {chatStep === 3 && (
                         <>
-                            <p style={{ margin: '0 0 10px 0', fontSize: '12px' }}>Email: anthony@example.com</p>
+                            <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#333' }}>anthony@example.com</p>
                             <button onClick={() => setChatStep(0)} style={btnStyle}>Back</button>
                         </>
                     )}
@@ -114,11 +149,10 @@ const DogGuide = ({ active, playerPosition }) => {
 };
 
 const btnStyle = {
-    display: 'block', width: '100%', margin: '5px 0', padding: '5px',
-    background: '#a855f7', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer'
+    display: 'block', width: '100%', margin: '5px 0', padding: '8px',
+    background: '#a855f7', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold'
 };
 
-// ... Collectibles (Same as before) ...
 const Collectible = ({ position, color, type, onCollect }) => {
     const ref = useRef();
     const [active, setActive] = useState(true);
@@ -132,22 +166,13 @@ const Collectible = ({ position, color, type, onCollect }) => {
         <group ref={ref} position={position}>
             <Float speed={2} rotationIntensity={1} floatIntensity={1}>
                 {type === 'code' && (
-                    <mesh rotation={[0.5, 0.5, 0]}>
-                        <boxGeometry args={[0.5, 0.5, 0.5]} />
-                        <meshStandardMaterial color="lime" />
-                    </mesh>
+                    <mesh rotation={[0.5, 0.5, 0]}><boxGeometry args={[0.5, 0.5, 0.5]} /><meshStandardMaterial color="lime" /></mesh>
                 )}
                 {type === 'art' && (
-                    <mesh>
-                        <torusGeometry args={[0.3, 0.1, 16, 32]} />
-                        <meshStandardMaterial color="magenta" />
-                    </mesh>
+                    <mesh><torusGeometry args={[0.3, 0.1, 16, 32]} /><meshStandardMaterial color="magenta" /></mesh>
                 )}
                 {type === 'lang' && (
-                    <mesh>
-                        <sphereGeometry args={[0.3, 16, 16]} />
-                        <meshStandardMaterial color="cyan" />
-                    </mesh>
+                    <mesh><sphereGeometry args={[0.3, 16, 16]} /><meshStandardMaterial color="cyan" /></mesh>
                 )}
             </Float>
         </group>
@@ -194,9 +219,7 @@ const GalleryScene = () => {
     const [playerPosForDog, setPlayerPosForDog] = useState(new THREE.Vector3(0, 0, 0));
 
     const handleSummonDog = () => {
-        if (playerRef.current) {
-            setPlayerPosForDog(playerRef.current.position.clone());
-        }
+        if (playerRef.current) setPlayerPosForDog(playerRef.current.position.clone());
         setDogActive(true);
     };
 
@@ -210,7 +233,6 @@ const GalleryScene = () => {
                 <div>Collected: {score}</div>
             </div>
 
-            {/* SUMMON DOG BUTTON */}
             {!dogActive && (
                 <button
                     onClick={handleSummonDog}
@@ -237,7 +259,6 @@ const GalleryScene = () => {
                 <DreamFloor />
                 <Village />
 
-                {/* Dog Guide (Only renders when summoned) */}
                 <DogGuide active={dogActive} playerPosition={playerPosForDog} />
 
                 <group position={[0, 0, 0]}>
