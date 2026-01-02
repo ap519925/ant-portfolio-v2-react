@@ -1,43 +1,15 @@
-import React, { useRef, useEffect, useState, useMemo, forwardRef, useImperativeHandle } from 'react';
+import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { useGLTF, useAnimations, Html } from '@react-three/drei';
+import { Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { SkeletonUtils } from 'three-stdlib';
 
-const MODEL_PATH = '/assets/dog-compressed.glb';
-
+// PROCEDURAL ROBOT (100% Stable)
+// No external GLB files. Just code.
 export const Player = forwardRef((props, ref) => {
     const group = useRef();
     useImperativeHandle(ref, () => group.current);
 
-    const { scene, animations } = useGLTF(MODEL_PATH);
-    const { actions, names } = useAnimations(animations, group);
-    const [debugInfo, setDebugInfo] = useState("");
-
-    const clone = useMemo(() => {
-        const c = SkeletonUtils.clone(scene);
-        c.traverse((o) => {
-            if (o.isMesh) {
-                // NO REAL SHADOWS
-                // o.castShadow = true; 
-                // o.receiveShadow = true;
-                if (!o.material.map) o.material.color.set('#a855f7');
-            }
-        });
-        return c;
-    }, [scene]);
-
-    useEffect(() => {
-        if (!names || names.length === 0) setDebugInfo("No Anims");
-        else {
-            const idle = names.find(n => n.toLowerCase().includes('idle')) || names[0];
-            const action = actions[idle];
-            if (action) action.reset().play();
-        }
-    }, [names, actions]);
-
     const [position, setPosition] = useState([0, 0, 5]);
-    const [rotation, setRotation] = useState([0, Math.PI, 0]);
     const keys = useRef({ w: false, a: false, s: false, d: false, shift: false });
     const { camera } = useThree();
 
@@ -58,69 +30,75 @@ export const Player = forwardRef((props, ref) => {
     }, []);
 
     useFrame((state, delta) => {
-        const { w, s, shift } = keys.current;
-        const moving = w || s;
+        if (!group.current) return;
 
-        // Anims
-        if (names.length > 0) {
-            const runKey = names.find(n => n.toLowerCase().includes('run') || n.toLowerCase().includes('walk')) || names[1] || names[0];
-            const idleKey = names.find(n => n.toLowerCase().includes('idle')) || names[0];
-            const runAct = actions[runKey];
-            const idleAct = actions[idleKey];
+        const { w, s, a, d, shift } = keys.current;
+        const moving = w || s || a || d;
+        let speed = shift ? 10 : 5;
 
+        // Bobbing animation for Robot parts
+        const body = group.current.children[0];
+        if (body) {
             if (moving) {
-                if (idleAct?.isRunning()) idleAct.fadeOut(0.2);
-                if (runAct && !runAct.isRunning()) runAct.reset().fadeIn(0.2).play();
-                if (runAct) runAct.timeScale = shift ? 1.5 : 1.0;
+                body.position.y = 0.5 + Math.sin(state.clock.elapsedTime * 15) * 0.1;
+                // Tilt forward when running
+                body.rotation.x = THREE.MathUtils.lerp(body.rotation.x, 0.2, 0.1);
             } else {
-                if (runAct?.isRunning()) runAct.fadeOut(0.2);
-                if (idleAct && !idleAct.isRunning()) idleAct.reset().fadeIn(0.2).play();
+                body.position.y = 0.5 + Math.sin(state.clock.elapsedTime * 2) * 0.05;
+                body.rotation.x = THREE.MathUtils.lerp(body.rotation.x, 0, 0.1);
             }
         }
 
-        if (!group.current) return;
+        // Movement
+        if (w) group.current.position.z -= speed * delta;
+        if (s) group.current.position.z += speed * delta;
+        if (a) group.current.position.x -= speed * delta;
+        if (d) group.current.position.x += speed * delta;
 
-        let rotY = rotation[1];
-        if (keys.current.a) rotY += 3 * delta;
-        if (keys.current.d) rotY -= 3 * delta;
-
-        let speed = shift ? 10 : 5;
-        let moveX = 0; let moveZ = 0;
-
-        if (keys.current.w) {
-            moveX += Math.sin(rotY) * speed * delta;
-            moveZ += Math.cos(rotY) * speed * delta;
-        }
-        if (keys.current.s) {
-            moveX -= Math.sin(rotY) * speed * delta;
-            moveZ -= Math.cos(rotY) * speed * delta;
-        }
-
-        const newPos = [position[0] + moveX, position[1], position[2] + moveZ];
-        setPosition(newPos);
-        setRotation([0, rotY, 0]);
-
-        group.current.position.set(newPos[0], newPos[1], newPos[2]);
-        group.current.rotation.set(0, rotY, 0);
-
-        const camDist = 5;
-        const camHeight = 3;
-        const targetCamX = newPos[0] - Math.sin(rotY) * camDist;
-        const targetCamZ = newPos[2] - Math.cos(rotY) * camDist;
-
-        camera.position.lerp(new THREE.Vector3(targetCamX, camHeight, targetCamZ), 0.1);
-        camera.lookAt(newPos[0], 1.5, newPos[2]);
+        // Camera Follow
+        const p = group.current.position;
+        // Smooth follow
+        const goalPos = new THREE.Vector3(p.x, p.y + 5, p.z + 8);
+        camera.position.lerp(goalPos, 0.1);
+        camera.lookAt(p.x, p.y + 1, p.z);
     });
 
     return (
         <group ref={group} {...props} dispose={null}>
-            <primitive object={clone} scale={1.5} />
+            {/* Robot Container */}
+            <group position={[0, 0.5, 0]}>
+                {/* Body */}
+                <mesh position={[0, 0, 0]}>
+                    <boxGeometry args={[0.5, 0.6, 0.3]} />
+                    <meshStandardMaterial color="#333" roughness={0.3} metalness={0.8} />
+                </mesh>
+                {/* Head */}
+                <mesh position={[0, 0.5, 0]}>
+                    <boxGeometry args={[0.35, 0.35, 0.35]} />
+                    <meshStandardMaterial color="#eee" roughness={0.2} metalness={0.5} />
+                </mesh>
+                {/* Eye / Visor */}
+                <mesh position={[0, 0.5, 0.15]}>
+                    <boxGeometry args={[0.25, 0.08, 0.1]} />
+                    <meshStandardMaterial color="#00ff00" emissive="#00ff00" emissiveIntensity={2} />
+                </mesh>
+                {/* Antenna */}
+                <mesh position={[0, 0.8, 0]}>
+                    <cylinderGeometry args={[0.02, 0.02, 0.3]} />
+                    <meshStandardMaterial color="#888" />
+                </mesh>
+                {/* Glowing Bit */}
+                <mesh position={[0, 1.0, 0]}>
+                    <sphereGeometry args={[0.04]} />
+                    <meshStandardMaterial color="red" emissive="red" emissiveIntensity={5} />
+                </mesh>
+            </group>
+
             {/* FAKE SHADOW BLOB */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
-                <circleGeometry args={[0.6, 32]} />
-                <meshBasicMaterial color="black" opacity={0.4} transparent depthWrite={false} />
+                <circleGeometry args={[0.4, 32]} />
+                <meshBasicMaterial color="black" opacity={0.3} transparent depthWrite={false} />
             </mesh>
-            {debugInfo && <Html position={[0, 2, 0]}><div style={{ background: 'black', color: 'white', fontSize: 10 }}>{debugInfo}</div></Html>}
         </group>
     );
 });
