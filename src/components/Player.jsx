@@ -8,8 +8,6 @@ const MODEL_PATH = '/assets/dog-compressed.glb';
 
 export const Player = forwardRef((props, ref) => {
     const group = useRef();
-
-    // Expose group ref to parent
     useImperativeHandle(ref, () => group.current);
 
     const { scene, animations } = useGLTF(MODEL_PATH);
@@ -20,8 +18,9 @@ export const Player = forwardRef((props, ref) => {
         const c = SkeletonUtils.clone(scene);
         c.traverse((o) => {
             if (o.isMesh) {
-                o.castShadow = true;
-                o.receiveShadow = true;
+                // NO REAL SHADOWS
+                // o.castShadow = true; 
+                // o.receiveShadow = true;
                 if (!o.material.map) o.material.color.set('#a855f7');
             }
         });
@@ -116,6 +115,11 @@ export const Player = forwardRef((props, ref) => {
     return (
         <group ref={group} {...props} dispose={null}>
             <primitive object={clone} scale={1.5} />
+            {/* FAKE SHADOW BLOB */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
+                <circleGeometry args={[0.6, 32]} />
+                <meshBasicMaterial color="black" opacity={0.4} transparent depthWrite={false} />
+            </mesh>
             {debugInfo && <Html position={[0, 2, 0]}><div style={{ background: 'black', color: 'white', fontSize: 10 }}>{debugInfo}</div></Html>}
         </group>
     );

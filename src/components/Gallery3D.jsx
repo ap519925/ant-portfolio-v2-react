@@ -1,11 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Environment, Sky, Float, Sparkles, Html } from '@react-three/drei';
+import React, { useRef, useState } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { Environment, Sky, Float, Sparkles } from '@react-three/drei';
 import { useNavigate } from 'react-router-dom';
 import Player from './Player';
-import * as THREE from 'three';
 
-// --- VISUAL ASSETS ---
+// --- VISUAL ASSETS (Shadows Disabled) ---
 
 const Wall = (props) => {
     return (
@@ -26,39 +25,20 @@ const DreamFloor = () => {
     );
 };
 
-// --- COLLECTIBLES SYSTEM ---
+// ... Collectibles code remains SAME ...
+// Re-pasting Collectible components for correctness
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
 
 const Collectible = ({ position, color, type, onCollect }) => {
     const ref = useRef();
     const [active, setActive] = useState(true);
-
     useFrame((state, delta) => {
         if (!active || !ref.current) return;
-        // Float & Rotate
         ref.current.rotation.y += delta;
         ref.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.2;
     });
-
-    const checkCollection = (playerPos) => {
-        if (!active || !ref.current) return;
-        const d = ref.current.position.distanceTo(new THREE.Vector3(...playerPos));
-        if (d < 1.5) {
-            setActive(false);
-            onCollect(type);
-        }
-    };
-
-    // Expose check to parent (simplified for now, ideally we use global state or collision system)
-    // We will cheat and check in the main loop or pass player ref.
-    // Actually, let's just make the Player check logic? 
-    // Or simpler: The Player is managed by the Scene, so we can pass player Pos down?
-    // Let's use a simple Global/Context or manual prop passing would be messy.
-    // For MVP: Simple ref.
-
-    // Changing approach: The SCENE manages the collection check roughly.
-
     if (!active) return null;
-
     return (
         <group ref={ref} position={position}>
             <Float speed={2} rotationIntensity={1} floatIntensity={1}>
@@ -81,7 +61,6 @@ const Collectible = ({ position, color, type, onCollect }) => {
                     </mesh>
                 )}
             </Float>
-            {/* Glow */}
             <pointLight distance={3} intensity={2} color={color} />
         </group>
     );
@@ -96,24 +75,19 @@ const CollectiblesManager = ({ playerRef, setScore }) => {
         { id: 5, pos: [-10, 1, -5], type: 'art', color: 'magenta' },
     ]);
     const [collected, setCollected] = useState([]);
-
     useFrame(() => {
         if (!playerRef.current) return;
         const playerPos = playerRef.current.position;
-
         items.current.forEach(item => {
             if (collected.includes(item.id)) return;
-            // Distance check
             const dx = playerPos.x - item.pos[0];
             const dz = playerPos.z - item.pos[2];
-            const dist = Math.sqrt(dx * dx + dz * dz);
-            if (dist < 1.5) {
+            if (Math.sqrt(dx * dx + dz * dz) < 1.5) {
                 setCollected(prev => [...prev, item.id]);
                 setScore(s => s + 1);
             }
         });
     });
-
     return (
         <group>
             {items.current.map(item => !collected.includes(item.id) && (
@@ -123,46 +97,39 @@ const CollectiblesManager = ({ playerRef, setScore }) => {
     );
 };
 
-
 const GalleryScene = () => {
     const navigate = useNavigate();
-    const playerRef = useRef(); // We need to access player ref from Scene
+    const playerRef = useRef();
     const [score, setScore] = useState(0);
 
     return (
         <div style={{ width: '100vw', height: '100vh', background: '#ffe4e1', overflow: 'hidden' }}>
-            {/* HUD */}
             <div style={{
                 position: 'absolute', bottom: 30, left: 30, color: 'rgba(100,100,100,0.8)', zIndex: 10,
                 fontFamily: 'Exo 2', pointerEvents: 'none'
             }}>
-                <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>DREAMSCAPE</div>
+                <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>DREAMSCAPE (NO SHADOWS)</div>
                 <div>Collected: {score} / 5</div>
             </div>
 
-            <Canvas shadows camera={{ position: [0, 5, 12], fov: 60 }}>
-                {/* Fog */}
+            {/* SHADOWS REMOVED from Canvas */}
+            <Canvas camera={{ position: [0, 5, 12], fov: 60 }} gl={{ antialias: true }}>
                 <fog attach="fog" args={['#eecbf2', 10, 80]} />
 
-                {/* Lighting */}
+                {/* Lighting - Standard, No Shadows */}
                 <ambientLight intensity={0.8} color="#ffe4e1" />
                 <directionalLight position={[10, 20, 10]} intensity={1.5} color="#fff" />
 
                 <Sky sunPosition={[100, 10, 100]} turbidity={0.5} rayleigh={0.8} />
                 <Environment preset="sunset" background={false} />
 
-                {/* Sparkling Particles */}
                 <Sparkles count={100} scale={40} size={5} speed={0.4} opacity={0.5} color="#fff" />
 
-                {/* Player - Pass ref so we can track it */}
                 <Player ref={playerRef} position={[0, 0, 8]} />
-
-                {/* Collectibles Logic */}
                 <CollectiblesManager playerRef={playerRef} setScore={setScore} />
 
                 <DreamFloor />
 
-                {/* Gallery Building */}
                 <group position={[0, 0, 0]}>
                     <Wall position={[0, 2.5, -10]} width={20} height={10} />
                     <Wall position={[-10, 2.5, 0]} rotation={[0, Math.PI / 2, 0]} width={20} height={10} />
