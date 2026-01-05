@@ -182,7 +182,9 @@ const About = () => {
             role: "Drupal Consultant",
             period: "02/2019 – 09/2019",
             details: [
-                "Developed Drupal 8 sites for global forums."
+                "Developed a Project timeline based on the technical & functional requirements that were provided.",
+                "Designed & developed new Drupal 8 website based on mockups & other various documentation.",
+                "Wrote up thorough documentation & user walkthrough’s with the help of various UN DESA staff."
             ],
             skills: ["Drupal 8"]
         },
