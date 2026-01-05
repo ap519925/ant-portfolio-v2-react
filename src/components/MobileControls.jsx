@@ -1,131 +1,145 @@
-import React from 'react';
-import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { ArrowUp } from 'lucide-react';
 
 const MobileControls = () => {
+    // Helper to trigger keyboard events for desktop-like behavior
     const simulateKey = (key, type) => {
         const event = new KeyboardEvent(type, { key: key, code: key === ' ' ? 'Space' : undefined });
         window.dispatchEvent(event);
     };
 
-    const handleTouchStart = (key) => (e) => {
-        e.preventDefault(); // Prevent scrolling/zooming/mouse emulation
-        simulateKey(key, 'keydown');
+    // --- JOYSTICK LOGIC ---
+    const joystickRef = useRef(null);
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [dragging, setDragging] = useState(false);
+    const origin = useRef({ x: 0, y: 0 });
+    const maxRadius = 40; // Max joystick movement from center
+
+    const handleStart = (clientX, clientY) => {
+        setDragging(true);
+        origin.current = { x: clientX, y: clientY };
     };
 
-    const handleTouchEnd = (key) => (e) => {
-        e.preventDefault();
-        simulateKey(key, 'keyup');
+    const handleMove = (clientX, clientY) => {
+        if (!dragging) return;
+        const dx = clientX - origin.current.x;
+        const dy = clientY - origin.current.y;
+        const distance = Math.hypot(dx, dy);
+        const angle = Math.atan2(dy, dx);
+
+        // Clamp to maxRadius
+        const clampedDist = Math.min(distance, maxRadius);
+        const x = Math.cos(angle) * clampedDist;
+        const y = Math.sin(angle) * clampedDist;
+
+        setPosition({ x, y });
+
+        // Translate joystick pos to Keys (W/A/S/D)
+        const threshold = 10;
+        if (y < -threshold) { simulateKey('w', 'keydown'); simulateKey('s', 'keyup'); }
+        else if (y > threshold) { simulateKey('s', 'keydown'); simulateKey('w', 'keyup'); }
+        else { simulateKey('w', 'keyup'); simulateKey('s', 'keyup'); }
+
+        if (x < -threshold) { simulateKey('a', 'keydown'); simulateKey('d', 'keyup'); }
+        else if (x > threshold) { simulateKey('d', 'keydown'); simulateKey('a', 'keyup'); }
+        else { simulateKey('a', 'keyup'); simulateKey('d', 'keyup'); }
     };
+
+    const handleEnd = () => {
+        setDragging(false);
+        setPosition({ x: 0, y: 0 });
+        // Release all keys
+        ['w', 'a', 's', 'd'].forEach(k => simulateKey(k, 'keyup'));
+    };
+
+    // Touch handlers
+    const onTouchStart = (e) => handleStart(e.touches[0].clientX, e.touches[0].clientY);
+    const onTouchMove = (e) => handleMove(e.touches[0].clientX, e.touches[0].clientY);
+
+    // Mouse handlers (for testing on desktop if needed)
+    const onMouseDown = (e) => handleStart(e.clientX, e.clientY);
+    const useWindowMouseEvents = () => {
+        useEffect(() => {
+            const move = (e) => handleMove(e.clientX, e.clientY);
+            const up = () => handleEnd();
+            if (dragging) {
+                window.addEventListener('mousemove', move);
+                window.addEventListener('mouseup', up);
+            }
+            return () => {
+                window.removeEventListener('mousemove', move);
+                window.removeEventListener('mouseup', up);
+            };
+        }, [dragging]);
+    };
+    useWindowMouseEvents(); // Attach window listeners when dragging with mouse
+
+    // --- BUTTON HANDLERS ---
+    const handleTouchStartBtn = (key) => (e) => { e.preventDefault(); simulateKey(key, 'keydown'); };
+    const handleTouchEndBtn = (key) => (e) => { e.preventDefault(); simulateKey(key, 'keyup'); };
+    const handleMouseDownBtn = (key) => () => simulateKey(key, 'keydown');
+    const handleMouseUpBtn = (key) => () => simulateKey(key, 'keyup');
 
     // --- STYLES ---
-    // Common button style
     const btnBaseStyle = {
-        width: '50px',
-        height: '50px',
-        background: 'rgba(255, 255, 255, 0.2)',
-        border: '2px solid rgba(255, 255, 255, 0.5)',
-        borderRadius: '50%',
-        color: 'white',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: '1.2rem',
-        backdropFilter: 'blur(5px)',
-        touchAction: 'none', // Critical for preventing browser zoom/scroll handling
-        userSelect: 'none',
-        cursor: 'pointer',
-        transition: 'background 0.1s',
-        pointerEvents: 'auto'
-    };
-
-    const dPadBtnStyle = { ...btnBaseStyle, position: 'absolute' };
-
-    // Group Styles
-    const leftGroupStyle = {
-        position: 'absolute',
-        bottom: '20px',
-        left: '20px',
-        width: '120px',
-        height: '120px',
-        pointerEvents: 'none', // Container ignores clicks, buttons accept
-        zIndex: 100,
-    };
-
-    const rightGroupStyle = {
-        position: 'absolute',
-        bottom: '20px',
-        right: '20px',
-        pointerEvents: 'none',
-        zIndex: 100,
-        display: 'flex',
-        gap: '15px',
-        alignItems: 'flex-end',
+        width: '50px', height: '50px',
+        background: 'rgba(255, 255, 255, 0.2)', border: '2px solid rgba(255, 255, 255, 0.5)', borderRadius: '50%',
+        color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.2rem',
+        backdropFilter: 'blur(5px)', userSelect: 'none', cursor: 'pointer', pointerEvents: 'auto', touchAction: 'none'
     };
 
     return (
         <>
-            {/* Media query to hide on desktop */}
-            <style>{`
-                @media (min-width: 1024px) {
-                    .mobile-controls-group { display: none !important; }
-                }
-            `}</style>
+            <style>{`@media (min-width: 1024px) { .mobile-controls-group { display: none !important; } }`}</style>
 
-            {/* LEFT D-PAD */}
-            <div className="mobile-controls-group" style={leftGroupStyle}>
-                <button
-                    style={{ ...dPadBtnStyle, top: 0, left: '35px' }}
-                    onTouchStart={handleTouchStart('w')} onTouchEnd={handleTouchEnd('w')}
-                    onMouseDown={() => simulateKey('w', 'keydown')} onMouseUp={() => simulateKey('w', 'keyup')}
+            {/* JOYSTICK ZONE - Bottom Left */}
+            <div className="mobile-controls-group" style={{
+                position: 'absolute', bottom: '40px', left: '40px',
+                width: '100px', height: '100px', zIndex: 100, touchAction: 'none'
+            }}>
+                {/* Joystick Base */}
+                <div
+                    onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={handleEnd}
+                    onMouseDown={onMouseDown}
+                    style={{
+                        width: '100px', height: '100px',
+                        borderRadius: '50%', background: 'rgba(255, 255, 255, 0.1)',
+                        border: '2px solid rgba(255,255,255,0.3)', position: 'relative',
+                        display: 'flex', justifyContent: 'center', alignItems: 'center'
+                    }}
                 >
-                    <ArrowUp />
-                </button>
-                <button
-                    style={{ ...dPadBtnStyle, bottom: 0, left: '35px' }}
-                    onTouchStart={handleTouchStart('s')} onTouchEnd={handleTouchEnd('s')}
-                    onMouseDown={() => simulateKey('s', 'keydown')} onMouseUp={() => simulateKey('s', 'keyup')}
-                >
-                    <ArrowDown />
-                </button>
-                <button
-                    style={{ ...dPadBtnStyle, top: '35px', left: 0 }}
-                    onTouchStart={handleTouchStart('a')} onTouchEnd={handleTouchEnd('a')}
-                    onMouseDown={() => simulateKey('a', 'keydown')} onMouseUp={() => simulateKey('a', 'keyup')}
-                >
-                    <ArrowLeft />
-                </button>
-                <button
-                    style={{ ...dPadBtnStyle, top: '35px', right: 0 }}
-                    onTouchStart={handleTouchStart('d')} onTouchEnd={handleTouchEnd('d')}
-                    onMouseDown={() => simulateKey('d', 'keydown')} onMouseUp={() => simulateKey('d', 'keyup')}
-                >
-                    <ArrowRight />
-                </button>
+                    {/* Joystick Stick */}
+                    <div style={{
+                        width: '50px', height: '50px', borderRadius: '50%',
+                        background: 'rgba(255, 255, 255, 0.8)', boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+                        transform: `translate(${position.x}px, ${position.y}px)`,
+                        transition: dragging ? 'none' : 'transform 0.1s ease-out'
+                    }} />
+                </div>
             </div>
 
-            {/* RIGHT ACTIONS */}
-            <div className="mobile-controls-group" style={rightGroupStyle}>
+            {/* ACTION BUTTONS - Bottom Right */}
+            <div className="mobile-controls-group" style={{
+                position: 'absolute', bottom: '30px', right: '30px',
+                zIndex: 100, display: 'flex', gap: '15px', alignItems: 'flex-end', pointerEvents: 'none'
+            }}>
                 <button
-                    onTouchStart={handleTouchStart('e')} onTouchEnd={handleTouchEnd('e')}
-                    onMouseDown={() => simulateKey('e', 'keydown')} onMouseUp={() => simulateKey('e', 'keyup')}
+                    onTouchStart={handleTouchStartBtn('e')} onTouchEnd={handleTouchEndBtn('e')}
+                    onMouseDown={handleMouseDownBtn('e')} onMouseUp={handleMouseUpBtn('e')}
                     style={{ ...btnBaseStyle, background: 'rgba(255, 215, 0, 0.3)' }}
-                >
-                    E
-                </button>
+                >E</button>
+
                 <button
-                    onTouchStart={handleTouchStart('f')} onTouchEnd={handleTouchEnd('f')}
-                    onMouseDown={() => simulateKey('f', 'keydown')} onMouseUp={() => simulateKey('f', 'keyup')}
+                    onTouchStart={handleTouchStartBtn('f')} onTouchEnd={handleTouchEndBtn('f')}
+                    onMouseDown={handleMouseDownBtn('f')} onMouseUp={handleMouseUpBtn('f')}
                     style={btnBaseStyle}
-                >
-                    F
-                </button>
+                >F</button>
+
                 <button
-                    onTouchStart={handleTouchStart(' ')} onTouchEnd={handleTouchEnd(' ')}
-                    onMouseDown={() => simulateKey(' ', 'keydown')} onMouseUp={() => simulateKey(' ', 'keyup')}
+                    onTouchStart={handleTouchStartBtn(' ')} onTouchEnd={handleTouchEndBtn(' ')}
+                    onMouseDown={handleMouseDownBtn(' ')} onMouseUp={handleMouseUpBtn(' ')}
                     style={{ ...btnBaseStyle, width: '80px', borderRadius: '40px' }}
-                >
-                    JUMP
-                </button>
+                >JUMP</button>
             </div>
         </>
     );

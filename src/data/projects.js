@@ -296,7 +296,7 @@ export const projects = [
         color: '#C33764', // Pink/Red
         description: 'Designed and developed Drupal website for Newschool Libraries.',
         link: 'https://library.newschool.edu/',
-        image: '/assets/newschool-images/newschoollogo.png',
+        image: '/assets/newschool-images/newschool1.jpg',
         gallery: [
             '/assets/newschool-images/newschool1.jpg',
             '/assets/newschool-images/newschool2.jpg',
