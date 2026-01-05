@@ -1,6 +1,6 @@
 import React, { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Html, Float, Cylinder, Text } from '@react-three/drei';
+import { Html, Float, Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 
 const BearBuck = ({ position, onCollect, isCollected }) => {
@@ -11,6 +11,7 @@ const BearBuck = ({ position, onCollect, isCollected }) => {
     useFrame((state, delta) => {
         if (!ref.current || isCollected) return;
 
+        ref.current.rotation.x += delta * 2;
         ref.current.rotation.y += delta * 2;
     });
 
@@ -18,55 +19,35 @@ const BearBuck = ({ position, onCollect, isCollected }) => {
 
     return (
         <group position={position}>
-            <Float speed={2} rotationIntensity={0} floatIntensity={1}>
+            <Float speed={2} rotationIntensity={2} floatIntensity={1}>
                 <group ref={ref}>
-                    {/* Coin Geometry */}
-                    {/* Cylinder: radiusTop, radiusBottom, height, radialSegments */}
+                    {/* Tennis Ball Geometry */}
                     <mesh
-                        rotation={[Math.PI / 2, 0, 0]}
                         onPointerOver={() => setHover(true)}
                         onPointerOut={() => setHover(false)}
                         onClick={onCollect} // Fallback click interaction
                     >
-                        <cylinderGeometry args={[0.5, 0.5, 0.1, 32]} />
+                        <sphereGeometry args={[0.4, 32, 32]} />
                         <meshStandardMaterial
-                            color="#ffd700"
-                            metalness={0.8}
-                            roughness={0.2}
-                            emissive="#ffd700"
-                            emissiveIntensity={hovered ? 0.4 : 0.1}
+                            color="#ccff00" // Tennis Ball Green/Yellow
+                            metalness={0.0}
+                            roughness={0.9} // fuzzy
+                            emissive="#ccff00"
+                            emissiveIntensity={hovered ? 0.3 : 0.1}
                         />
                     </mesh>
 
-                    {/* "DOG FACE" Placeholder Texture - Since we don't have the specific texture ready yet, 
-                        we will use the 'alogo.png' or just a visual representation for now. 
-                        The user asked for "coins will look like my dogs face". 
-                        I will assume a projected text face or simple texture map if available.
-                        For now, let's put a '🐶' emoji on it using Text or standard material.
+                    {/* Simple visualization of a seam using a white line curve? 
+                        Without a custom texture, a simple white Torus ring creates a generic 'sport ball' look.
                     */}
-                    <Text
-                        position={[0, 0, 0.06]}
-                        fontSize={0.5}
-                        color="#8B4513"
-                        anchorX="center"
-                        anchorY="middle"
-                    >
-                        🐶
-                    </Text>
-                    <Text
-                        position={[0, 0, -0.06]}
-                        rotation={[0, Math.PI, 0]}
-                        fontSize={0.5}
-                        color="#8B4513"
-                        anchorX="center"
-                        anchorY="middle"
-                    >
-                        🐶
-                    </Text>
+                    <mesh rotation={[Math.PI / 2, 0, 0]}>
+                        <torusGeometry args={[0.39, 0.02, 16, 32]} />
+                        <meshStandardMaterial color="white" />
+                    </mesh>
                 </group>
             </Float>
             {/* Glow Effect */}
-            <pointLight distance={3} intensity={0.5} color="#ffd700" />
+            <pointLight distance={3} intensity={0.5} color="#ccff00" />
         </group>
     );
 };
