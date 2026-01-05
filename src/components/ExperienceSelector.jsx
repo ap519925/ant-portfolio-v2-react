@@ -78,8 +78,6 @@ const ExperienceSelector = () => {
     const navigate = useNavigate();
     const [hoveredOption, setHoveredOption] = useState(null);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const terminalVideoRef = useRef(null);
-    const galleryVideoRef = useRef(null);
 
     // Track mouse position
     useEffect(() => {
@@ -93,23 +91,6 @@ const ExperienceSelector = () => {
         window.addEventListener('mousemove', handleMouseMove);
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, []);
-
-    // Play video when hovering
-    useEffect(() => {
-        if (hoveredOption === 'terminal' && terminalVideoRef.current) {
-            terminalVideoRef.current.play();
-        } else if (terminalVideoRef.current) {
-            terminalVideoRef.current.pause();
-            terminalVideoRef.current.currentTime = 0;
-        }
-
-        if (hoveredOption === 'gallery' && galleryVideoRef.current) {
-            galleryVideoRef.current.play();
-        } else if (galleryVideoRef.current) {
-            galleryVideoRef.current.pause();
-            galleryVideoRef.current.currentTime = 0;
-        }
-    }, [hoveredOption]);
 
     const variants = {
         hidden: { opacity: 0, y: 20 },
@@ -182,32 +163,26 @@ const ExperienceSelector = () => {
                         }}
                     >
                         {hoveredOption === 'terminal' && (
-                            <video
-                                ref={terminalVideoRef}
-                                src="/assets/terminal-preview.mp4"
-                                loop
-                                muted
-                                playsInline
+                            <img
+                                src="/assets/stock-1.jpg"
+                                alt="Terminal Preview"
                                 style={{
                                     width: '100%',
                                     height: '100%',
                                     objectFit: 'cover',
-                                    filter: 'brightness(0.7)',
+                                    filter: 'brightness(0.5) blur(2px)',
                                 }}
                             />
                         )}
                         {hoveredOption === 'gallery' && (
-                            <video
-                                ref={galleryVideoRef}
-                                src="/assets/gallery-preview.mp4"
-                                loop
-                                muted
-                                playsInline
+                            <img
+                                src="/assets/stock-2.jpg"
+                                alt="Gallery Preview"
                                 style={{
                                     width: '100%',
                                     height: '100%',
                                     objectFit: 'cover',
-                                    filter: 'brightness(0.7)',
+                                    filter: 'brightness(0.5) blur(2px)',
                                 }}
                             />
                         )}

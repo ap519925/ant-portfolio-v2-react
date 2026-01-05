@@ -6,7 +6,10 @@ import Player from './Player';
 import * as THREE from 'three';
 import { projects } from '../data/projects';
 import SpotifyWidget3D from './SpotifyWidget3D';
-import ProjectInterior from './ProjectInterior'; // Import new interior
+import ProjectInterior from './ProjectInterior';
+import BearBuck from './BearBuck';
+import MobileControls from './MobileControls';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // --- ASSETS & HELPERS ---
 const DreamFloor = () => (
@@ -49,7 +52,7 @@ const ProjectZone = ({ position, project, onEnter }) => {
 
     const renderGeometry = () => {
         const gallery = (project.gallery && project.gallery.length > 0) ? project.gallery : (project.image ? [project.image] : []);
-        // ... (Same Geometry Logic as before) ...
+
         if (project.category.includes('AI') || project.id === 'capframe') {
             return (
                 <group>
@@ -86,12 +89,10 @@ const ProjectZone = ({ position, project, onEnter }) => {
 
     return (
         <group position={position} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)} onClick={(e) => { e.stopPropagation(); onEnter(project); }}>
-            {/* Visual Floor */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
                 <ringGeometry args={[4, 5, 32]} />
                 <meshBasicMaterial color={color} opacity={0.6} transparent />
             </mesh>
-            {/* Interactive "Enter" Ring */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.1, 0]}>
                 <ringGeometry args={[5.2, 5.5, 32]} />
                 <meshBasicMaterial color="white" opacity={hovered ? 1 : 0.3} transparent />
@@ -173,54 +174,345 @@ const Village = ({ onEnterProject }) => {
     );
 };
 
-const RobotDog = ({ ...props }) => {
-    // ... Simplified prop passing or just ref usage
-    // Using previous simplified safe version
+const FullScreenGallery = ({ images, initialIndex = 0, onClose }) => {
+    const [index, setIndex] = useState(initialIndex);
+
+    const handleNext = (e) => {
+        e.stopPropagation();
+        setIndex((prev) => (prev + 1) % images.length);
+    };
+
+    const handlePrev = (e) => {
+        e.stopPropagation();
+        setIndex((prev) => (prev - 1 + images.length) % images.length);
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') onClose();
+            if (e.key === 'ArrowRight') setIndex((prev) => (prev + 1) % images.length);
+            if (e.key === 'ArrowLeft') setIndex((prev) => (prev - 1 + images.length) % images.length);
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onClose, images.length]);
+
+    return (
+        <div style={{
+            position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(0,0,0,0.95)', zIndex: 2000, display: 'flex',
+            alignItems: 'center', justifyContent: 'center', flexDirection: 'column'
+        }} onClick={onClose}>
+
+            <button onClick={onClose} style={{
+                position: 'absolute', top: 30, right: 30, background: 'none', border: 'none',
+                color: 'white', cursor: 'pointer'
+            }}>
+                <X size={32} />
+            </button>
+
+            <div style={{ position: 'relative', maxWidth: '80%', maxHeight: '80%' }} onClick={(e) => e.stopPropagation()}>
+                <img
+                    src={images[index]}
+                    alt={`Gallery ${index}`}
+                    style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 0 20px rgba(0,0,0,0.5)' }}
+                />
+
+                {images.length > 1 && (
+                    <>
+                        <button onClick={handlePrev} style={{
+                            position: 'absolute', left: -60, top: '50%', transform: 'translateY(-50%)',
+                            background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '48px', height: '48px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer',
+                            transition: 'background 0.2s'
+                        }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+                            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}>
+                            <ChevronLeft size={24} />
+                        </button>
+
+                        <button onClick={handleNext} style={{
+                            position: 'absolute', right: -60, top: '50%', transform: 'translateY(-50%)',
+                            background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '48px', height: '48px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer',
+                            transition: 'background 0.2s'
+                        }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+                            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}>
+                            <ChevronRight size={24} />
+                        </button>
+                    </>
+                )}
+            </div>
+
+            <div style={{ marginTop: '20px', color: '#888', fontFamily: 'monospace' }}>
+                {index + 1} / {images.length}
+            </div>
+        </div>
+    );
+};
+
+const DancingDog = ({ isDancing, position }) => {
     const group = useRef();
-    useFrame((state) => {
-        if (group.current) {
-            group.current.position.y = Math.sin(state.clock.elapsedTime * 3) * 0.05;
+
+    useFrame((state, delta) => {
+        if (!group.current) return;
+
+        // Idle Animation (Breathing)
+        group.current.scale.y = THREE.MathUtils.lerp(group.current.scale.y, 1 + Math.sin(state.clock.elapsedTime * 2) * 0.05, 0.1);
+
+        if (isDancing) {
+            // DANCE MOVES!
+            // Spin
+            group.current.rotation.y += delta * 15;
+            // Jump
+            group.current.position.y = Math.abs(Math.sin(state.clock.elapsedTime * 10)) * 2;
+            // Wiggle
+            group.current.rotation.z = Math.sin(state.clock.elapsedTime * 20) * 0.5;
+        } else {
+            // Reset transforms smoothly
+            group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, 0, 0.1);
+            group.current.position.y = THREE.MathUtils.lerp(group.current.position.y, 0, 0.1);
+            group.current.rotation.z = THREE.MathUtils.lerp(group.current.rotation.z, 0, 0.1);
         }
     });
+
     return (
-        <group ref={group} {...props}>
-            <mesh position={[0, 0.4, 0]}><boxGeometry args={[0.4, 0.4, 0.6]} /><meshStandardMaterial color="#a855f7" /></mesh>
-            {/* ... body parts ... */}
-            <mesh position={[0, 0.7, 0.4]}><boxGeometry args={[0.3, 0.3, 0.3]} /><meshStandardMaterial color="#ddd" /></mesh>
-            {/* For brevity, using simple cube dog if code gets truncated, but keeping full version */}
-            <mesh name="tail" position={[0, 0.6, -0.3]}><boxGeometry args={[0.1, 0.1, 0.4]} /><meshStandardMaterial color="#a855f7" /></mesh>
+        <group ref={group} position={position}>
+            {/* Body */}
+            <mesh position={[0, 0.5, 0]}>
+                <boxGeometry args={[0.6, 0.5, 0.9]} />
+                <meshStandardMaterial color="#8B4513" />
+            </mesh>
+            {/* Head */}
+            <mesh position={[0, 0.8, 0.5]}>
+                <boxGeometry args={[0.4, 0.4, 0.45]} />
+                <meshStandardMaterial color="#8B4513" />
+            </mesh>
+            {/* Ears */}
+            <mesh position={[-0.2, 1.0, 0.5]}>
+                <boxGeometry args={[0.1, 0.2, 0.1]} />
+                <meshStandardMaterial color="#5D2906" />
+            </mesh>
+            <mesh position={[0.2, 1.0, 0.5]}>
+                <boxGeometry args={[0.1, 0.2, 0.1]} />
+                <meshStandardMaterial color="#5D2906" />
+            </mesh>
+            {/* Legs */}
+            <mesh position={[-0.2, 0.25, 0.35]}><boxGeometry args={[0.15, 0.5, 0.15]} /><meshStandardMaterial color="#8B4513" /></mesh>
+            <mesh position={[0.2, 0.25, 0.35]}><boxGeometry args={[0.15, 0.5, 0.15]} /><meshStandardMaterial color="#8B4513" /></mesh>
+            <mesh position={[-0.2, 0.25, -0.35]}><boxGeometry args={[0.15, 0.5, 0.15]} /><meshStandardMaterial color="#8B4513" /></mesh>
+            <mesh position={[0.2, 0.25, -0.35]}><boxGeometry args={[0.15, 0.5, 0.15]} /><meshStandardMaterial color="#8B4513" /></mesh>
+            {/* Tail */}
+            <mesh position={[0, 0.6, -0.4]} rotation={[0.5, 0, 0]}>
+                <boxGeometry args={[0.1, 0.1, 0.4]} />
+                <meshStandardMaterial color="#5D2906" />
+            </mesh>
+
+            {/* Funny Sunglasses (Party Mode Only) */}
+            <mesh position={[0, 0.85, 0.72]}>
+                <boxGeometry args={[0.45, 0.1, 0.05]} />
+                <meshStandardMaterial color="black" />
+            </mesh>
         </group>
     );
 };
-// Full robot logic is preserved in previous file content, I'm just enabling props here in case.
+
+// --- GAME DATA ---
+const BEAR_BUCK_LOCATIONS = [
+    [0, 2, 0], // Center
+    [20, 2, 20],
+    [-20, 2, -20],
+    [30, 2, -10],
+    [-10, 2, 30],
+]; // 5 Coins total
+
+const GameLogic = ({ playerRef, collectedIds, setCollectedIds, totalBucks, setDiscoMode }) => {
+    // Check collisions every frame
+    useFrame(() => {
+        if (!playerRef.current) return;
+
+        const playerPos = playerRef.current.position; // THREE.Vector3
+
+        BEAR_BUCK_LOCATIONS.forEach((loc, index) => {
+            if (collectedIds.includes(index)) return; // Already collected
+
+            const distance = playerPos.distanceTo(new THREE.Vector3(loc[0], loc[1], loc[2]));
+            if (distance < 3) {
+                // Collect!
+                setCollectedIds(prev => {
+                    const newIds = [...prev, index];
+                    if (newIds.length === totalBucks) {
+                        setDiscoMode(true);
+                    }
+                    return newIds;
+                });
+            }
+        });
+    });
+    return null;
+};
 
 const GalleryScene = () => {
     const navigate = useNavigate();
     const playerRef = useRef();
-    const [score, setScore] = useState(0);
+    const audioRef = useRef(null); // Audio controller
     const [activeProject, setActiveProject] = useState(null); // NULL = City, OBJECT = Interior
+    const [galleryState, setGalleryState] = useState({ isOpen: false, index: 0 });
+
+    // Game State
+    const [collectedBucks, setCollectedBucks] = useState([]);
+    const [discoMode, setDiscoMode] = useState(false);
+    const [currentDance, setCurrentDance] = useState(null); // { id, name, file }
+    const [showDanceMenu, setShowDanceMenu] = useState(false);
+
+    // DANCE ZOO
+    const DANCE_OPTIONS = [
+        { id: 'dance1', name: 'Boom Dance', file: '/assets/animations/Meshy_AI_Animation_Boom_Dance_withSkin.glb', audio: '/assets/music/bass.mp3' },
+        { id: 'dance2', name: 'Bubble Pop', file: '/assets/animations/Meshy_AI_Animation_Bubble_Dance_withSkin.glb', audio: '/assets/music/bubble.mp3' },
+        { id: 'dance3', name: 'Gangnam Style', file: '/assets/animations/Meshy_AI_Animation_Gangnam_Groove_withSkin.glb', audio: '/assets/music/gangnam.mp3' },
+        { id: 'dance4', name: 'Y.M.C.A', file: '/assets/animations/Meshy_AI_Animation_ymca_dance_withSkin.glb', audio: '/assets/music/ymca.mp3' },
+    ];
+    const totalBucks = BEAR_BUCK_LOCATIONS.length;
+
+    // Audio Player Logic
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current = null;
+        }
+        if (currentDance && currentDance.audio) {
+            const audio = new Audio(currentDance.audio);
+            audio.loop = true;
+            audio.volume = 0.4; // 40% volume default
+            audio.play().catch(e => console.warn("Audio play blocked:", e));
+            audioRef.current = audio;
+        }
+    }, [currentDance]);
+
+    // Toggle Dance Menu
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key.toLowerCase() === 'e' && discoMode) {
+                setShowDanceMenu(prev => !prev);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [discoMode]);
 
     const handleEnterProject = (project) => {
         setActiveProject(project);
     };
 
     const handleExitProject = () => {
+        if (galleryState.isOpen) return;
         setActiveProject(null);
     };
 
+    const handleInspectImage = (index) => {
+        setGalleryState({ isOpen: true, index });
+    };
+
+    const handleCloseGallery = () => {
+        setGalleryState((prev) => ({ ...prev, isOpen: false }));
+    };
+
+    const currentProjectImages = useMemo(() => {
+        if (!activeProject) return [];
+        return activeProject.gallery && activeProject.gallery.length > 0
+            ? activeProject.gallery
+            : (activeProject.image ? [activeProject.image] : []);
+    }, [activeProject]);
+
     return (
-        <div style={{ width: '100vw', height: '100vh', background: '#ffe4e1', overflow: 'hidden' }}>
-            {/* HUD - Only show in City Mode */}
-            {!activeProject && (
-                <div style={{
-                    position: 'absolute', top: 20, left: 20, zIndex: 10,
-                    display: 'flex', gap: '10px'
-                }}>
-                    <div style={{ padding: '10px', background: 'rgba(255,255,255,0.8)', borderRadius: '10px' }}>
-                        <b>Tip:</b> Click a Project Building to Enter!
-                    </div>
-                </div>
+        <div style={{ width: '100vw', height: '100vh', background: discoMode ? '#220033' : '#ffe4e1', overflow: 'hidden', transition: 'background 1s' }}>
+            {/* Gallery Overlay */}
+            {galleryState.isOpen && activeProject && (
+                <FullScreenGallery
+                    images={currentProjectImages}
+                    initialIndex={galleryState.index}
+                    onClose={handleCloseGallery}
+                />
             )}
+
+            {/* HUD */}
+            {!activeProject && !galleryState.isOpen && (
+                <>
+                    <div style={{
+                        position: 'absolute', top: 20, left: 20, zIndex: 10,
+                        display: 'flex', gap: '10px'
+                    }}>
+                        <div style={{ padding: '10px', background: 'rgba(255,255,255,0.8)', borderRadius: '10px' }}>
+                            <b>Tip:</b> Click a Project Building to Enter!
+                        </div>
+                    </div>
+
+                    {/* Bear Bucks Counter */}
+                    <div style={{
+                        position: 'absolute', top: 70, left: 20, zIndex: 10,
+                        padding: '10px 15px', background: 'rgba(0,0,0,0.6)', borderRadius: '20px',
+                        color: 'gold', fontWeight: 'bold', border: '2px solid gold',
+                        display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.2rem'
+                    }}>
+                        <span>🐶 Bear Bucks: {collectedBucks.length} / {totalBucks}</span>
+                    </div>
+
+                    {discoMode && (
+                        <div style={{
+                            position: 'absolute', top: '15%', left: '50%', transform: 'translate(-50%, -50%)',
+                            color: '#fff', fontSize: '3rem', fontWeight: 'bold', textShadow: '0 0 20px #ff00ff',
+                            animation: 'pulse 0.5s infinite alternate', pointerEvents: 'none', zIndex: 5, textAlign: 'center'
+                        }}>
+                            <div>PARTY MODE UNLOCKED!</div>
+                            <div style={{ fontSize: '1.5rem', marginTop: '10px', color: 'yellow' }}>PRESS 'E' TO OPEN DANCE MENU!</div>
+                        </div>
+                    )}
+
+                    {/* DANCE MENU OVERLAY */}
+                    {showDanceMenu && (
+                        <div style={{
+                            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                            background: 'rgba(0,0,0,0.9)', padding: '20px', borderRadius: '20px',
+                            border: '2px solid #ff00ff', zIndex: 2000, display: 'flex', flexDirection: 'column', gap: '10px',
+                            minWidth: '300px', textAlign: 'center'
+                        }}>
+                            <div style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '10px', textTransform: 'uppercase', borderBottom: '1px solid #ff00ff', paddingBottom: '10px' }}>
+                                Choose Your Vibe
+                            </div>
+
+                            {DANCE_OPTIONS.map(d => (
+                                <button key={d.id} onClick={() => { setCurrentDance(d); setShowDanceMenu(false); }}
+                                    style={{
+                                        padding: '12px', background: currentDance?.id === d.id ? '#ff00ff' : 'transparent',
+                                        border: '1px solid #fff', color: '#fff', borderRadius: '8px', cursor: 'pointer',
+                                        fontSize: '1.2rem', fontWeight: 'bold', transition: 'all 0.2s'
+                                    }}
+                                    onMouseOver={e => e.currentTarget.style.background = '#ff00ff'}
+                                    onMouseOut={e => e.currentTarget.style.background = currentDance?.id === d.id ? '#ff00ff' : 'transparent'}
+                                >
+                                    {d.name}
+                                </button>
+                            ))}
+
+                            <button onClick={() => { setCurrentDance(null); setShowDanceMenu(false); }}
+                                style={{
+                                    padding: '12px', background: '#333', border: '1px solid #888', color: '#ccc',
+                                    borderRadius: '8px', cursor: 'pointer', marginTop: '10px'
+                                }}>
+                                STOP DANCING (Back to Work)
+                            </button>
+
+                            <button onClick={() => setShowDanceMenu(false)} style={{
+                                position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', color: '#888', cursor: 'pointer'
+                            }}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                    )}
+                </>
+            )}
+
+            {/* Mobile Controls Overlay */}
+            <MobileControls />
 
             <div style={{
                 position: 'absolute', bottom: 30, left: 30, color: 'rgba(100,100,100,0.8)', zIndex: 10,
@@ -236,25 +528,69 @@ const GalleryScene = () => {
                     {!activeProject ? (
                         // --- CITY SCENE ---
                         <>
-                            <color attach="background" args={['#ffe4e1']} />
-                            <ambientLight intensity={1.0} color="#fff" />
-                            <directionalLight position={[20, 50, 20]} intensity={1.5} color="#fff" />
-                            <Sparkles count={100} scale={100} size={8} speed={0.4} opacity={0.5} color="#fff" />
+                            {discoMode ? (
+                                <>
+                                    <color attach="background" args={['#220033']} />
+                                    <ambientLight intensity={0.5} color="#ff00ff" />
+                                    <pointLight position={[0, 20, 0]} intensity={2} color="#00ffff" />
+                                    <Sparkles count={500} scale={150} size={15} speed={2} opacity={1} color="cyan" />
+                                    <Sparkles count={200} scale={100} size={20} speed={1} opacity={1} color="magenta" />
+                                </>
+                            ) : (
+                                <>
+                                    <color attach="background" args={['#ffe4e1']} />
+                                    <ambientLight intensity={1.0} color="#fff" />
+                                    <directionalLight position={[20, 50, 20]} intensity={1.5} color="#fff" />
+                                    <Sparkles count={100} scale={100} size={8} speed={0.4} opacity={0.5} color="#fff" />
+                                </>
+                            )}
 
-                            <Player ref={playerRef} position={[0, 0, 8]} />
+                            <Player ref={playerRef} position={[0, 0, 8]} isDancing={!!currentDance} danceUrl={currentDance?.file} />
                             <DreamFloor />
 
                             <Village onEnterProject={handleEnterProject} />
 
                             <SpotifyWidget3D position={[-12, 4, 12]} />
-                            {/* Collectibles could be added here */}
+
+                            {/* <DancingDog> Removed - Main Player dances now! */}
+
+                            {/* Render Bear Bucks */}
+                            {BEAR_BUCK_LOCATIONS.map((pos, i) => (
+                                <BearBuck
+                                    key={i}
+                                    position={pos}
+                                    isCollected={collectedBucks.includes(i)}
+                                    onCollect={() => {
+                                        if (!collectedBucks.includes(i)) {
+                                            setCollectedBucks(prev => {
+                                                const newIds = [...prev, i];
+                                                if (newIds.length === totalBucks) setDiscoMode(true);
+                                                return newIds;
+                                            });
+                                        }
+                                    }}
+                                />
+                            ))}
+
+                            {/* Collision Logic */}
+                            <GameLogic
+                                playerRef={playerRef}
+                                collectedIds={collectedBucks}
+                                setCollectedIds={setCollectedBucks}
+                                totalBucks={totalBucks}
+                                setDiscoMode={setDiscoMode}
+                            />
+
                         </>
                     ) : (
                         // --- INTERIOR SCENE ---
                         <>
                             <color attach="background" args={['#222']} />
-                            {/* Dark background for interior focus */}
-                            <ProjectInterior project={activeProject} onExit={handleExitProject} />
+                            <ProjectInterior
+                                project={activeProject}
+                                onExit={handleExitProject}
+                                onImageClick={handleInspectImage}
+                            />
                         </>
                     )}
                 </Suspense>
@@ -266,6 +602,13 @@ const GalleryScene = () => {
             }}>
                 EXIT
             </button>
+
+            <style>{`
+                @keyframes pulse {
+                    from { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+                    to { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+                }
+            `}</style>
         </div>
     );
 };

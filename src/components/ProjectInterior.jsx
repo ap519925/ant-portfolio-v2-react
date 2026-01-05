@@ -4,10 +4,19 @@ import { Html, Image as DreiImage, Text, Float } from '@react-three/drei';
 import Player from './Player';
 
 // --- ASSETS ---
-const Frame = ({ url, position, rotation, scale = [3, 2, 1], color = 'black' }) => {
+const Frame = ({ url, position, rotation, scale = [3, 2, 1], color = 'black', onClick }) => {
     const [hovered, setHover] = useState(false);
+
+    useEffect(() => {
+        document.body.style.cursor = hovered ? 'pointer' : 'auto';
+        return () => { document.body.style.cursor = 'auto'; };
+    }, [hovered]);
+
     return (
-        <group position={position} rotation={rotation}>
+        <group position={position} rotation={rotation} onClick={(e) => {
+            e.stopPropagation();
+            if (onClick) onClick();
+        }}>
             {/* Frame Border */}
             <mesh
                 position={[0, 0, -0.05]}
@@ -16,7 +25,7 @@ const Frame = ({ url, position, rotation, scale = [3, 2, 1], color = 'black' }) 
                 onPointerOut={() => setHover(false)}
             >
                 <boxGeometry />
-                <meshStandardMaterial color={hovered ? '#555' : color} roughness={0.5} />
+                <meshStandardMaterial color={hovered ? '#ff8da1' : color} roughness={0.5} />
             </mesh>
             {/* Image */}
             <DreiImage url={url} scale={scale} toneMapped={false} />
@@ -61,7 +70,7 @@ const Room = ({ width = 20, height = 8, depth = 20, color = '#fff' }) => {
     );
 };
 
-const ProjectInterior = ({ project, onExit }) => {
+const ProjectInterior = ({ project, onExit, onImageClick }) => {
     const playerRef = useRef();
 
     // Process Images
@@ -106,13 +115,14 @@ const ProjectInterior = ({ project, onExit }) => {
                     position={[x, 3, z]}
                     rotation={wall.rot}
                     color={project.color}
+                    onClick={() => onImageClick && onImageClick(i)}
                 />
             );
 
             if (subPos === 2) wallIndex++; // Next wall after 3 images
         });
         return f;
-    }, [images, project]);
+    }, [images, project, onImageClick]);
 
     return (
         <>

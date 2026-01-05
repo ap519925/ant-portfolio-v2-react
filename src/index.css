@@ -225,7 +225,7 @@ ul {
 }
 
 .blob-bottom-left {
-  bottom: -200px;
+  bottom: 0;
   left: -200px;
   animation-duration: 30s;
   animation-direction: alternate-reverse;

@@ -5,6 +5,12 @@ import './Contact.css';
 
 const Contact = () => {
     const ref = useRef(null);
+    const [formData, setFormData] = React.useState({
+        name: '',
+        email: '',
+        message: ''
+    });
+    const [status, setStatus] = React.useState(null); // null, 'sending', 'success', 'error'
 
     // Mouse position state
     const x = useMotionValue(0);
@@ -36,6 +42,38 @@ const Contact = () => {
     const handleMouseLeave = () => {
         x.set(0);
         y.set(0);
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setStatus('sending');
+
+        try {
+            const response = await fetch("https://formsubmit.co/ajax/anthony.phillips.job@gmail.com", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                setStatus('success');
+                setFormData({ name: '', email: '', message: '' });
+                setTimeout(() => setStatus(null), 5000);
+            } else {
+                setStatus('error');
+            }
+        } catch (error) {
+            console.error("Form error:", error);
+            setStatus('error');
+        }
     };
 
     return (
@@ -73,7 +111,7 @@ const Contact = () => {
                                     </div>
                                     <div>
                                         <h4>Email Me</h4>
-                                        <p>anthony@mtanthony.com</p>
+                                        <p>anthony.phillips.job@gmail.com</p>
                                     </div>
                                 </div>
 
@@ -95,20 +133,47 @@ const Contact = () => {
                             </div>
                         </div>
 
-                        <form className="contact-form" onSubmit={(e) => e.preventDefault()}>
+                        <form className="contact-form" onSubmit={handleSubmit}>
                             <div className="form-group">
                                 <label htmlFor="name">Name</label>
-                                <input type="text" id="name" placeholder="Your Name" />
+                                <input
+                                    type="text"
+                                    id="name"
+                                    name="name"
+                                    placeholder="Your Name"
+                                    required
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="email">Email</label>
-                                <input type="email" id="email" placeholder="Your Email" />
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    placeholder="Your Email"
+                                    required
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="message">Message</label>
-                                <textarea id="message" rows="5" placeholder="Your Message"></textarea>
+                                <textarea
+                                    id="message"
+                                    name="message"
+                                    rows="5"
+                                    placeholder="Your Message"
+                                    required
+                                    value={formData.message}
+                                    onChange={handleChange}
+                                ></textarea>
                             </div>
-                            <button type="submit" className="btn btn-primary">Send Message</button>
+                            <button type="submit" className="btn btn-primary" disabled={status === 'sending' || status === 'success'}>
+                                {status === 'sending' ? 'Sending...' : status === 'success' ? 'Message Sent!' : status === 'error' ? 'Failed, Try again.' : 'Send Message'}
+                            </button>
+                            {status === 'success' && <p style={{ color: 'green', marginTop: '10px' }}>Thanks! I'll be in touch soon.</p>}
                         </form>
                     </div>
                 </motion.div>
