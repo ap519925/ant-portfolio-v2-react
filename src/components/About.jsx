@@ -132,13 +132,27 @@ const About = () => {
             skills: ["Drupal 10", "Multisite", "CI/CD", "Gemini AI", "SEO"]
         },
         {
+            company: "BlueDrop Solutions LLC",
+            role: "Principal Development Consulting",
+            period: "10/2017 – Present",
+            details: [
+                "Completed over 20 freelance projects, including WordPress websites, custom web apps, and e-commerce platforms, utilizing PHP 8.x for backend development.",
+                "Provide web management services ranging from content updates to server management (VPS deployment on Debian, Ubuntu, CentOS).",
+                "Drupal 11 Website redesign and migration for 14 different local labor union chapters, including CiviCRM integration and custom module development.",
+                "Migration from Drupal 7 → Drupal 11, & complete theme redesign.",
+                "Deployed to 14 different IBEW local chapter websites; currently setting up newly developed Drupal 11 website to also be used as a PWA so that chapter members can easily pay their dues and receive updates."
+            ],
+            skills: ["PHP 8", "WordPress", "Drupal 11", "VPS", "CiviCRM"]
+        },
+        {
             company: "Jacobs Solutions (Massport)",
             role: "Sr. Software Engineer (Drupal)",
             period: "02/2024 – 05/2025",
             details: [
-                "Engineered React flight tracker with real-time API integration.",
+                "Engineered complex React flight tracker with real-time API integration for flight status updates.",
                 "Reduced API overhead by 60% by rewriting legacy bus locator apps in React/Drupal.",
-                "Standardized GitHub workflows and implemented Playwright automated testing (40% bug reduction)."
+                "Standardized GitHub workflows and implemented Playwright automated testing (40% bug reduction).",
+                "Optimized performance using Datadog/Imperva; streamlined deployments via GitHub Actions and Acquia Cloud."
             ],
             skills: ["React.js", "Drupal", "Playwright", "GitHub Actions", "APIs"]
         },
@@ -164,6 +178,15 @@ const About = () => {
             skills: ["WordPress", "AngularJS", "AWS Lambda", "PWA"]
         },
         {
+            company: "United Nations (DESA)",
+            role: "Drupal Consultant",
+            period: "02/2019 – 09/2019",
+            details: [
+                "Developed Drupal 8 sites for global forums."
+            ],
+            skills: ["Drupal 8"]
+        },
+        {
             company: "United Nations (UNAOC)",
             role: "Full-Stack Consultant (WordPress & React Native)",
             period: "04/2018 – 12/2018",
@@ -174,15 +197,6 @@ const About = () => {
                 "Implemented AWS SES for dashboard notifications."
             ],
             skills: ["WordPress", "React Native", "PHP", "SASS", "Adobe Creative Suite", "Google Analytics", "SEO", "Linux"]
-        },
-        {
-            company: "United Nations (DESA)",
-            role: "Drupal Consultant",
-            period: "02/2019 – 09/2019",
-            details: [
-                "Developed Drupal 8 sites for global forums."
-            ],
-            skills: ["Drupal 8"]
         },
         {
             company: "The New School",
@@ -196,19 +210,6 @@ const About = () => {
                 "Used Drupal Console and Drush to manage all instances both VM and local."
             ],
             skills: ["Drupal 8", "PHP", "Git", "SASS", "Linux", "Red Hat", "Drush"]
-        },
-        {
-            company: "BlueDrop Solutions LLC",
-            role: "Principal Development Consulting",
-            period: "10/2017 – Present",
-            details: [
-                "Completed over 20 freelance projects, including WordPress websites, custom web apps, and e-commerce platforms, utilizing PHP 8.x for backend development.",
-                "Provide web management services ranging from content updates to server management (VPS deployment on Debian, Ubuntu, CentOS).",
-                "Drupal 11 Website redesign and migration for 14 different local labor union chapters, including CiviCRM integration and custom module development.",
-                "Migration from Drupal 7 → Drupal 11, & complete theme redesign.",
-                "Deployed to 14 different IBEW local chapter websites; currently setting up newly developed Drupal 11 website to also be used as a PWA so that chapter members can easily pay their dues and receive updates."
-            ],
-            skills: ["PHP 8", "WordPress", "Drupal 11", "VPS", "CiviCRM"]
         },
         {
             company: "NYS Office of the State Comptroller",

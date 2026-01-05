@@ -6,8 +6,13 @@ export const projects = [
         color: '#FF4757', // Bright Red
         description: 'An electron based Desktop application that can record your screen, perform AI edits and allows for sharing clips to multiple platforms.',
         link: '#',
-        image: '/assets/stock-2.jpg',
-        gallery: [], // No specific gallery images defined yet
+        image: '/assets/capframe-images/capframe.png',
+        gallery: [
+            '/assets/capframe-images/capframe1.png',
+            '/assets/capframe-images/capframe2.png',
+            '/assets/capframe-images/capframe3.png',
+            '/assets/capframe-images/capframe4.png'
+        ],
         bg: 'linear-gradient(135deg, #FF4757 0%, #2f3542 100%)',
         tags: ['Electron', 'React', 'AI', 'FFmpeg'],
         content: {
@@ -28,7 +33,7 @@ export const projects = [
         color: '#0056b3', // Union Blue
         description: 'A modern, accessible Drupal 11 website for the International Brotherhood of Electrical Workers.',
         link: 'https://ibewlocal90.org',
-        image: '/assets/stock-1.jpg',
+        image: '/assets/portfolio/massport_front.jpg', // Placeholder for missing stock-1.jpg
         gallery: [],
         bg: 'linear-gradient(135deg, #0056b3 0%, #002a80 100%)',
         tags: ['Drupal 11', 'Gov/Non-Profit', 'Accessibility'],
@@ -50,7 +55,7 @@ export const projects = [
         color: '#e67e22', // Orange
         description: 'A mobile application designed to simplify the parking experience in New York City.',
         link: '#',
-        image: '/assets/stock-3.jpg',
+        image: '/assets/portfolio/massport_front.jpg', // Placeholder for missing stock-3.jpg
         gallery: [],
         bg: 'linear-gradient(135deg, #e67e22 0%, #2f3542 100%)',
         tags: ['React Native', 'Google Maps', 'Node.js'],
@@ -72,13 +77,13 @@ export const projects = [
         color: '#1c1e3a', // Dark Navy
         description: 'A comprehensive web solution for the Intrepid Sea, Air & Space Museum.',
         link: 'https://mtanthony.com/work/web/intrepid',
-        image: '/assets/portfolio/intrepidmuseum.jpg',
+        image: '/assets/intrepid-museum-images/intrepidmuseum.jpg',
         gallery: [
-            '/assets/portfolio/intrepid1.jpg',
-            '/assets/portfolio/intrepid2.jpg',
-            '/assets/portfolio/intrepid3.jpg',
-            '/assets/portfolio/intrepid4.jpg',
-            '/assets/portfolio/intrepid5.jpg'
+            '/assets/intrepid-museum-images/intrepid1.jpg',
+            '/assets/intrepid-museum-images/intrepid2.jpg',
+            '/assets/intrepid-museum-images/intrepid3.jpg',
+            '/assets/intrepid-museum-images/intrepid4.jpg',
+            '/assets/intrepid-museum-images/intrepid5.jpg'
         ],
         bg: 'linear-gradient(135deg, #1c1e3a 0%, #10101a 100%)',
         tags: ['Drupal', 'PHP', 'Frontend'],
@@ -131,13 +136,13 @@ export const projects = [
         color: '#1f2d3a', // Slate Blue
         description: 'A trading group web application for financial analysis and community.',
         link: 'https://mtanthony.com/work/web/bearishbulls',
-        image: '/assets/stock-4.jpg',
+        image: '/assets/bearish-bulls-images/bearishbulls.png',
         gallery: [
-            '/assets/portfolio/bbnet2.webp',
-            '/assets/portfolio/bbnet3.webp',
-            '/assets/portfolio/bbnet4.webp',
-            '/assets/portfolio/bbnet7.webp',
-            '/assets/portfolio/bbnet9.webp'
+            '/assets/bearish-bulls-images/bbnet2.webp',
+            '/assets/bearish-bulls-images/bbnet3.webp',
+            '/assets/bearish-bulls-images/bbnet4.webp',
+            '/assets/bearish-bulls-images/bbnet7.webp',
+            '/assets/bearish-bulls-images/bbnet9.webp'
         ],
         bg: 'linear-gradient(135deg, #1f2d3a 0%, #10101a 100%)',
         tags: ['React', 'Finance', 'Dashboard'],
@@ -159,14 +164,14 @@ export const projects = [
         color: '#3a1c36', // Moody Purple
         description: 'A collection of my creative design projects and UI/UX explorations.',
         link: 'https://mtanthony.com/work/design/design',
-        image: '/assets/designimg/IM.png',
+        image: '/assets/design-images/IM.png',
         gallery: [
-            '/assets/designimg/IM.png',
-            '/assets/designimg/PHILLIPS.png',
-            '/assets/designimg/advertkl.png',
-            '/assets/designimg/bearishbulls.png',
-            '/assets/designimg/dcrump.png',
-            '/assets/designimg/klshop.png'
+            '/assets/design-images/IM.png',
+            '/assets/design-images/PHILLIPS.png',
+            '/assets/design-images/advertkl.png',
+            '/assets/design-images/bearishbulls.png',
+            '/assets/design-images/dcrump.png',
+            '/assets/design-images/klshop.png'
         ],
         bg: 'linear-gradient(135deg, #3a1c36 0%, #10101a 100%)',
         tags: ['UI/UX', 'Graphics', 'Creative'],
@@ -188,14 +193,14 @@ export const projects = [
         color: '#1c3a38', // Deep Teal
         description: 'App and Website for the United Nations Alliance of Civilizations.',
         link: 'https://mtanthony.com/work/web/unaoc',
-        image: '/assets/unaocapp.webp',
+        image: '/assets/unaoc-images/unaocapp.webp',
         gallery: [
-            '/assets/portfolio/unaocdes1.png',
-            '/assets/portfolio/unaocweb2.png',
-            '/assets/portfolio/unaocweb3.png',
-            '/assets/portfolio/unaocdes3.png',
-            '/assets/portfolio/unaocweb4.png',
-            '/assets/portfolio/unaocdes5.png'
+            '/assets/unaoc-images/unaocdes1.png',
+            '/assets/unaoc-images/unaocweb2.png',
+            '/assets/unaoc-images/unaocweb3.png',
+            '/assets/unaoc-images/unaocdes3.png',
+            '/assets/unaoc-images/unaocweb4.png',
+            '/assets/unaoc-images/unaocdes5.png'
         ],
         bg: 'linear-gradient(135deg, #1c3a38 0%, #10101a 100%)',
         tags: ['International', 'App', 'Web'],
@@ -217,7 +222,7 @@ export const projects = [
         color: '#3a2e1c', // Bronze/Gold
         description: 'Bitcoin ATM locator and cryptocurrency information platform.',
         link: 'https://mtanthony.com/work/web/unbankworld',
-        image: '/assets/stock-3.jpg',
+        image: '/assets/portfolio/massport_front.jpg', // Placeholder for missing stock-3.jpg
         gallery: [
             '/assets/unbank.png',
             '/assets/unbank2.png'
@@ -265,11 +270,11 @@ export const projects = [
         color: '#FF512F', // Vivid Orange
         description: 'A web app that gives international students English names based on their traits.',
         link: 'http://www.myengname.com',
-        image: '/assets/myengname.webp',
+        image: '/assets/myengname-images/myengname.webp',
         gallery: [
-            '/assets/portfolio/myengname.png',
-            '/assets/portfolio/myengname2.png',
-            '/assets/portfolio/myengnamemobile.webp'
+            '/assets/myengname-images/myengname.png',
+            '/assets/myengname-images/myengname2.png',
+            '/assets/myengname-images/myengnamemobile.webp'
         ],
         bg: 'linear-gradient(135deg, #FF512F 0%, #DD2476 100%)',
         tags: ['PHP', 'Web App', 'Bootstrap'],
@@ -291,12 +296,12 @@ export const projects = [
         color: '#C33764', // Pink/Red
         description: 'Designed and developed Drupal website for Newschool Libraries.',
         link: 'https://library.newschool.edu/',
-        image: '/assets/newschoollogo.png',
+        image: '/assets/newschool-images/newschoollogo.png',
         gallery: [
-            '/assets/portfolio/newschool1.jpg',
-            '/assets/portfolio/newschool2.jpg',
-            '/assets/portfolio/newschool3.jpg',
-            '/assets/portfolio/newschool4.jpg'
+            '/assets/newschool-images/newschool1.jpg',
+            '/assets/newschool-images/newschool2.jpg',
+            '/assets/newschool-images/newschool3.jpg',
+            '/assets/newschool-images/newschool4.jpg'
         ],
         bg: 'linear-gradient(135deg, #C33764 0%, #1D2671 100%)',
         tags: ['Drupal', 'Education', 'Library Systems'],
