@@ -1,0 +1,411 @@
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;800&display=swap');
+
+.hero-wrapper {
+    height: auto;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-section {
+    min-height: 100vh;
+    height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    padding-top: 180px;
+    overflow: hidden;
+}
+
+.hero-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.hero-content {
+    flex: 1;
+    max-width: 600px;
+}
+
+.hero-greeting {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.hero-name {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 6rem;
+    line-height: 1.1;
+    margin-bottom: 25px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    text-transform: none;
+    color: #ffffff;
+    display: block;
+
+    /* Animation: Cinematic Blur Reveal */
+    opacity: 0;
+    animation: blurReveal 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+    animation-delay: 2.8s;
+}
+
+@keyframes blurReveal {
+    0% {
+        filter: blur(20px);
+        opacity: 0;
+        transform: translateY(30px) scale(0.9);
+    }
+
+    100% {
+        filter: blur(0);
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.hero-role {
+    font-size: 2.5rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-bottom: 25px;
+}
+
+.hero-description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+    max-width: 500px;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+/* Visual - Code Block */
+/* Visual - Code Block */
+.hero-visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    /* Ensure minimized/maximized states have space/context */
+    z-index: 10;
+}
+
+.code-block-wrapper {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid var(--glass-border);
+    /* Transform handled by motion component now */
+    overflow: hidden;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+.code-block-wrapper.minimized .code-block-content {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Remove CSS hover since we use framer-motion variants now */
+/* .code-block-wrapper:hover { ... } */
+
+.code-block-header {
+    padding: 15px;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.window-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+    display: flex;
+    /* Flex to center icon */
+    align-items: center;
+    justify-content: center;
+    color: rgba(0, 0, 0, 0.5);
+    /* Icon color */
+}
+
+.dot:hover {
+    transform: scale(1.2);
+    filter: brightness(1.2);
+}
+
+.dot:active {
+    transform: scale(0.9);
+}
+
+.red {
+    background: #ff5f56;
+}
+
+.yellow {
+    background: #ffbd2e;
+}
+
+.green {
+    background: #27c93f;
+}
+
+.code-block-content {
+    padding: 25px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.95rem;
+    /* Slightly smaller for terminal feel */
+    line-height: 1.6;
+    height: 300px;
+    overflow-y: auto;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    cursor: text;
+}
+
+.terminal-line {
+    display: flex;
+    margin-bottom: 4px;
+    word-break: break-all;
+}
+
+.terminal-prompt {
+    color: var(--accent-color);
+    /* Green prompt */
+    margin-right: 10px;
+    user-select: none;
+    font-weight: 700;
+}
+
+.terminal-input {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: inherit;
+    flex: 1;
+    outline: none;
+    padding: 0;
+    margin-left: 0;
+}
+
+.command-output {
+    color: var(--text-secondary);
+    /* Red/Pink for output usually, or standard grey */
+    margin-bottom: 4px;
+    margin-left: 0;
+    white-space: pre-wrap;
+}
+
+.success-output {
+    color: var(--accent-color);
+}
+
+.error-output {
+    color: #ff5f56;
+}
+
+/* Scrollbar for terminal */
+.code-block-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.code-block-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+/* Scroll Indicator */
+.scroll-indicator {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.scroll-indicator:hover {
+    opacity: 1;
+}
+
+.mouse {
+    width: 26px;
+    height: 40px;
+    border: 2px solid var(--text-secondary);
+    border-radius: 20px;
+    position: relative;
+}
+
+.wheel {
+    width: 4px;
+    height: 8px;
+    background: var(--text-secondary);
+    border-radius: 2px;
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: scroll 1.5s infinite;
+}
+
+@keyframes scroll {
+    0% {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, 15px);
+        opacity: 0;
+    }
+}
+
+@media (max-width: 960px) {
+    .hero-wrapper {
+        height: auto;
+        /* Disable scroll-jack */
+    }
+
+    .hero-section {
+        height: auto;
+        min-height: auto;
+        position: relative;
+        padding-top: 100px;
+        padding-bottom: 60px;
+        display: block;
+        /* Normal block flow */
+        overflow: visible;
+    }
+
+    .hero-container {
+        flex-direction: column;
+        /* Stack vertically (Text top, Terminal bottom) */
+        justify-content: flex-start;
+        align-items: center;
+        text-align: center;
+        gap: 50px;
+    }
+
+    .hero-content {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .hero-name {
+        font-size: 3.5rem;
+        /* Resize appropriate for mobile */
+    }
+
+    .hero-role {
+        font-size: 1.8rem;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+    }
+
+    .hero-visual {
+        width: 100%;
+        height: 400px;
+        /* Ensure space for terminal */
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .code-block-wrapper {
+        transform: none;
+        max-width: 100%;
+        position: relative !important;
+        /* Override absolute from framer if needed */
+        height: 350px !important;
+        /* Force height */
+    }
+
+    .scroll-indicator {
+        display: none;
+        /* Hide scroll arrow on mobile to save space */
+    }
+}
+
+@media (max-width: 500px) {
+    .hero-name {
+        font-size: 2.5rem;
+    }
+
+    .hero-role {
+        font-size: 1.4rem;
+    }
+
+    .hero-description {
+        font-size: 1rem;
+    }
+
+    .hero-visual {
+        margin-top: 10px;
+        height: auto;
+    }
+
+    .code-block-wrapper {
+        height: 250px !important;
+    }
+
+    .hero-buttons {
+        width: 100%;
+    }
+
+    .hero-buttons .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 360px) {
+    .hero-name {
+        font-size: 2rem;
+        letter-spacing: -1px;
+    }
+
+    .hero-role {
+        font-size: 1.2rem;
+    }
+
+    .hero-description {
+        font-size: 0.9rem;
+    }
+
+    .code-block-wrapper {
+        height: 220px !important;
+    }
+}
+
+@keyframes signatureWipe {
+    to {
+        clip-path: inset(0 0 0 0);
+    }
+}

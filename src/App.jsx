@@ -1,19 +1,20 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import { LanguageProvider } from './components/LanguageContext';
-import Loader from './components/Loader';
-import ThemeBall from './components/ThemeBall';
-import LiveChat from './components/LiveChat';
+import Navbar from './components/common/Navbar';
+import Footer from './components/common/Footer';
+import { LanguageProvider } from './context/LanguageContext';
+import Loader from './components/common/Loader';
+import ThemeBall from './components/common/ThemeBall';
+import LiveChat from './components/features/LiveChat';
+import CustomCursor from './components/common/CustomCursor';
 
 // Lazy loading route components for performance
-const Home = React.lazy(() => import('./components/Home'));
-const ProjectPage = React.lazy(() => import('./components/ProjectPage'));
-const AllProjectsPage = React.lazy(() => import('./components/AllProjectsPage'));
-const Gallery3D = React.lazy(() => import('./components/Gallery3D'));
-const ExperienceSelector = React.lazy(() => import('./components/ExperienceSelector'));
+const Home = React.lazy(() => import('./pages/Home'));
+const ProjectPage = React.lazy(() => import('./pages/ProjectPage'));
+const AllProjectsPage = React.lazy(() => import('./pages/AllProjectsPage'));
+const Gallery3D = React.lazy(() => import('./pages/Gallery3D'));
+const ExperienceSelector = React.lazy(() => import('./pages/ExperienceSelector'));
 
 function App() {
   const location = useLocation();
@@ -48,6 +49,7 @@ function App() {
 
         <div className="blob blob-top-right"></div>
         <div className="blob blob-bottom-left"></div>
+        <CustomCursor />
 
         {!loading && (
           <>
