@@ -1,0 +1,51 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USERNAME }}
+        password: ${{ secrets.VPS_PASSWORD }}
+        script: |
+          # 1. Clean up old directory
+          echo "Cleaning up old directory..."
+          rm -rf /var/www/mtanthony.com
+          
+          # 2. Re-create directory
+          echo "Creating new directory..."
+          mkdir -p /var/www/mtanthony.com
+
+          # 3. Clone Fresh Repository
+          echo "Cloning repository..."
+          # Clone into a temporary folder to move files cleanly
+          git clone https://github.com/ap519925/ant-portfolio-v2-react.git /tmp/portfolio-temp
+
+          # 4. Move files to target
+          echo "Moving files..."
+          mv /tmp/portfolio-temp/* /var/www/mtanthony.com/
+          mv /tmp/portfolio-temp/.* /var/www/mtanthony.com/ 2>/dev/null || true # Move hidden files too, ignore error if . and .. fail
+          rm -rf /tmp/portfolio-temp
+
+          # 5. Install & Build
+          echo "Installing and Building..."
+          cd /var/www/mtanthony.com
+          npm install
+          npm run build
+          
+          # 6. Organize Build Files (Move dist content to root if serving directly, or keep as is)
+          # Assuming server expects files in root, or points to 'dist'. 
+          # IF your server config points to the root of mtanthony.com, you might want to move dist contents out:
+          # mv dist/* .
+          # rm -rf dist
+          
+          echo "Deploy Complete!"
