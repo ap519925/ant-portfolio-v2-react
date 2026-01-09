@@ -6,9 +6,6 @@ const Footer = () => {
         <footer className="footer">
             <div className="container footer-container">
                 <p>&copy; {new Date().getFullYear()} Anthony Phillips. All rights reserved.</p>
-                <p className="made-with">
-                    Built with React & Vite
-                </p>
             </div>
         </footer>
     );

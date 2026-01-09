@@ -78,12 +78,20 @@ const Terminal = () => {
                 }
                 return; // Return early since we handled history manually
             case 'chat':
-                if (window.openLiveChat) {
+                if (args) {
+                    // Send to Google Voice Number via SMS Protocol
+                    // Replace with your actual Google Voice number e.g. +15551234567
+                    const GOOGLE_VOICE_NUMBER = '+15551234567';
+                    const body = encodeURIComponent(`Terminal Msg: ${args}`);
+                    window.open(`sms:${GOOGLE_VOICE_NUMBER}?&body=${body}`, '_self');
+                    outputText = `Drafting SMS to ${GOOGLE_VOICE_NUMBER}...`;
+                    type = 'success-output';
+                } else if (window.openLiveChat) {
                     window.openLiveChat();
                     outputText = 'Opening secure communication channel...';
                     type = 'success-output';
                 } else {
-                    outputText = 'Chat system offline. (Widget not loaded)';
+                    outputText = 'Usage: chat <message> (Sends SMS) or chat (Opens LiveWidget)';
                     type = 'error-output';
                 }
                 break;
@@ -92,7 +100,7 @@ const Terminal = () => {
                 const commands = [
                     { cmd: 'help', desc: 'Show this list' },
                     { cmd: 'ask <msg>', desc: 'Ask AI (OpenRouter) 🤖' },
-                    { cmd: 'chat', desc: 'Live Chat (Tawk.to) 💬' },
+                    { cmd: 'chat <msg>', desc: 'Send me an SMS 📱' },
                     { cmd: 'games', desc: 'My favorite games 🎮' },
                     { cmd: 'specs', desc: 'My PC Build 🖥️' },
                     { cmd: 'sports', desc: 'Activities I love ⚽' },
@@ -330,8 +338,34 @@ const Terminal = () => {
                 type = 'success-output';
                 break;
             case 'linkedin':
-                window.open('https://linkedin.com', '_blank');
+                window.open('https://www.linkedin.com/in/anthony-phillips-dev/', '_blank');
                 outputText = 'Opening LinkedIn...';
+                type = 'success-output';
+                break;
+            case 'twitter':
+            case 'x':
+                window.open('https://x.com/bearish_bulls', '_blank');
+                outputText = 'Opening X (Twitter)...';
+                type = 'success-output';
+                break;
+            case 'tradingview':
+                window.open('https://www.tradingview.com/u/DONALD-CRUMP/', '_blank');
+                outputText = 'Opening TradingView...';
+                type = 'success-output';
+                break;
+            case 'youtube':
+                window.open('https://www.youtube.com/@jpowbrrrrrr', '_blank');
+                outputText = 'Opening YouTube...';
+                type = 'success-output';
+                break;
+            case 'tiktok':
+                window.open('https://www.tiktok.com/@antman1660', '_blank');
+                outputText = 'Opening TikTok...';
+                type = 'success-output';
+                break;
+            case 'spotify':
+                window.open('https://open.spotify.com/playlist/3GWBkCGdj8G3iQ3we1DKwu', '_blank');
+                outputText = 'Opening Spotify...';
                 type = 'success-output';
                 break;
             default:

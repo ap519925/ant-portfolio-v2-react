@@ -70,7 +70,44 @@ const Room = ({ width = 20, height = 8, depth = 20, color = '#fff' }) => {
     );
 };
 
-const ProjectInterior = ({ project, onExit, onImageClick }) => {
+const DOOR_MODEL = '/assets/models/minecraft_wooden_door.glb';
+useGLTF.preload(DOOR_MODEL);
+
+const DoorModel = ({ onClick, label, color = 'red' }) => {
+    const { scene } = useGLTF(DOOR_MODEL);
+    const clone = useMemo(() => {
+        const c = scene.clone();
+        c.traverse((node) => {
+            if (node.isMesh) {
+                node.castShadow = true;
+                node.receiveShadow = true;
+            }
+        });
+        return c;
+    }, [scene]);
+
+    const [hovered, setHover] = useState(false);
+
+    useEffect(() => {
+        document.body.style.cursor = hovered ? 'pointer' : 'auto';
+        return () => { document.body.style.cursor = 'auto'; };
+    }, [hovered]);
+
+    return (
+        <group onClick={(e) => { e.stopPropagation(); onClick(); }} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
+            <primitive object={clone} scale={1.5} rotation={[0, 0, 0]} />
+            {hovered && (
+                <mesh position={[0, 1, 0]}>
+                    <boxGeometry args={[1.2, 2.2, 0.2]} />
+                    <meshBasicMaterial color={color} opacity={0.3} transparent />
+                </mesh>
+            )}
+            <Text position={[0, 2.8, 0]} fontSize={0.5} color="white">{label}</Text>
+        </group>
+    );
+};
+
+const ProjectInterior = ({ project, onExit, onGoToRoof, onImageClick }) => {
     const playerRef = useRef();
 
     // Process Images
@@ -159,13 +196,14 @@ const ProjectInterior = ({ project, onExit, onImageClick }) => {
                 {project.description}
             </Text>
 
-            {/* Exit Door */}
-            <group position={[0, 0, 9.5]} onClick={onExit}>
-                <mesh position={[0, 2, 0]}>
-                    <boxGeometry args={[3, 4, 0.2]} />
-                    <meshStandardMaterial color="#ff4444" />
-                </mesh>
-                <Text position={[0, 3, 0.2]} fontSize={0.5} color="white">EXIT</Text>
+            {/* Exit Door (South Wall - Back - Left) */}
+            <group position={[-2, 0, 9.5]} rotation={[0, Math.PI, 0]}>
+                <DoorModel onClick={onExit} label="EXIT" color="red" />
+            </group>
+
+            {/* Elevator / Roof Access (South Wall - Back - Right) */}
+            <group position={[2, 0, 9.5]} rotation={[0, Math.PI, 0]}>
+                <DoorModel onClick={onGoToRoof} label="ROOF" color="lime" />
             </group>
 
             {/* Player */}

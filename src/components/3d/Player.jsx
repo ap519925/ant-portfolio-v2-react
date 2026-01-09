@@ -17,7 +17,9 @@ const DRAG = 4;
 // Preload common ones
 useGLTF.preload(MODEL_PATH);
 
-export const Player = forwardRef(({ isDancing, danceUrl, activeAnimationName }, ref) => {
+// ... (imports remain the same)
+
+export const Player = forwardRef(({ isDancing, danceUrl, activeAnimationName, platforms = [] }, ref) => {
     // 1. Setup Refs for State (Manual Physics)
     const position = useRef(new THREE.Vector3(0, 0, 8)); // Start at 0,0,8 (y=0 for ground)
     const velocity = useRef(new THREE.Vector3(0, 0, 0));
@@ -25,8 +27,17 @@ export const Player = forwardRef(({ isDancing, danceUrl, activeAnimationName }, 
     const jumpCount = useRef(0);
     const playerGroup = useRef();
 
-    // EXPOSE GROUP TO PARENT (Critical for Coin Collection)
-    useImperativeHandle(ref, () => playerGroup.current);
+    // EXPOSE METHODS TO PARENT
+    useImperativeHandle(ref, () => ({
+        ...playerGroup.current, // Expose standard group props
+        teleport: (x, y, z) => {
+            position.current.set(x, y, z);
+            velocity.current.set(0, 0, 0); // Reset momentum
+            if (playerGroup.current) {
+                playerGroup.current.position.set(x, y, z);
+            }
+        }
+    }));
 
     // Keyboard Controls
     useEffect(() => {
@@ -65,6 +76,7 @@ export const Player = forwardRef(({ isDancing, danceUrl, activeAnimationName }, 
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp);
+            keys.current = { w: false, a: false, s: false, d: false, space: false, shift: false }; // Reset
         };
     }, []);
 
@@ -112,6 +124,29 @@ export const Player = forwardRef(({ isDancing, danceUrl, activeAnimationName }, 
             }
         }
     }, [isDancing, danceNames, danceActions, activeAnimationName]);
+
+    // Helper: Ground Detection
+    const getGroundHeight = (x, z, y) => {
+        let h = 0;
+        if (platforms) {
+            for (let p of platforms) {
+                // p: { pos: [x,y,z], size: [w, d], height: h }
+                const dx = Math.abs(x - p.pos[0]);
+                const dz = Math.abs(z - p.pos[2]);
+                const halfW = p.size[0] / 2;
+                const halfD = p.size[1] / 2;
+
+                if (dx < halfW && dz < halfD) {
+                    // Check if player is *above* or near the platform level
+                    // Allow snapping if within 5 units above, or just treat as floor if above
+                    if (y >= p.height - 2) {
+                        h = Math.max(h, p.height);
+                    }
+                }
+            }
+        }
+        return h;
+    };
 
     // 5. Physics & Animation Loop
     useFrame((state, delta) => {
@@ -171,8 +206,10 @@ export const Player = forwardRef(({ isDancing, danceUrl, activeAnimationName }, 
             position.current.y += velocity.current.y * delta;
             position.current.z += velocity.current.z * delta;
 
-            if (position.current.y < 0) {
-                position.current.y = 0;
+            // Ground Collision
+            const groundH = getGroundHeight(position.current.x, position.current.z, position.current.y);
+            if (position.current.y < groundH) {
+                position.current.y = groundH;
                 velocity.current.y = 0;
                 jumpCount.current = 0;
             }

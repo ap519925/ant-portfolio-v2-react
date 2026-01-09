@@ -33,13 +33,17 @@ const BUILDING_MODELS = [
 BUILDING_MODELS.forEach(url => useGLTF.preload(url));
 
 // --- HELPERS ---
-const DreamFloor = () => (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]}>
-        <planeGeometry args={[500, 500]} />
-        <meshStandardMaterial color="#eecbf2" />
-        <gridHelper args={[500, 50, '#ffffff', '#eecbf2']} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} />
-        <fog attach="fog" args={['#ffe4e1', 20, 500]} />
-    </mesh>
+const CityFloor = () => (
+    <group rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]}>
+        {/* Main Asphalt */}
+        <mesh>
+            <planeGeometry args={[1000, 1000]} />
+            <meshStandardMaterial color="#222" roughness={0.9} />
+        </mesh>
+        {/* Grid Lines (Street Pattern) */}
+        <gridHelper args={[1000, 50, '#555', '#333']} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} />
+        <fog attach="fog" args={['#050510', 20, 400]} />
+    </group>
 );
 
 const Road = ({ position, rotation, length, width = 8 }) => (
@@ -174,7 +178,7 @@ const Billboard = ({ project }) => {
     );
 };
 
-const ComplexBuilding = ({ project, hovered, index }) => {
+const ComplexBuilding = ({ project, hovered, index, showObservationDeck }) => {
     // Select model based on index
     const modelUrl = BUILDING_MODELS[index % BUILDING_MODELS.length];
     const { scene } = useGLTF(modelUrl);
@@ -218,21 +222,57 @@ const ComplexBuilding = ({ project, hovered, index }) => {
 };
 
 
+const DOOR_MODEL = '/assets/models/minecraft_wooden_door.glb';
+useGLTF.preload(DOOR_MODEL);
+
+const DoorModel = ({ onClick, label }) => {
+    const { scene } = useGLTF(DOOR_MODEL);
+    const clone = useMemo(() => {
+        const c = scene.clone();
+        c.traverse((node) => {
+            if (node.isMesh) {
+                node.castShadow = true;
+                node.receiveShadow = true;
+            }
+        });
+        return c;
+    }, [scene]);
+
+    // Hover effect
+    const [hovered, setHover] = useState(false);
+
+    return (
+        <group onClick={onClick} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
+            <primitive object={clone} scale={1.5} rotation={[0, Math.PI / 2, 0]} />
+
+            {/* Glowing Frame/Indicator */}
+            {hovered && (
+                <mesh position={[0, 1, 0]}>
+                    <boxGeometry args={[1.2, 2.2, 0.2]} />
+                    <meshBasicMaterial color="gold" opacity={0.3} transparent />
+                </mesh>
+            )}
+
+            {/* Label */}
+            <group position={[0, 2.5, 0]}>
+                <Text fontSize={0.3} color="white" anchorY="bottom">{label}</Text>
+            </group>
+        </group>
+    );
+};
+
 const ProjectZone = ({ position, project, index, onEnter }) => {
     const [hovered, setHover] = useState(false);
     const height = 25; // Standardized height
     const color = project.color || '#888';
 
     return (
-        <group position={position} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)} onClick={(e) => { e.stopPropagation(); onEnter(project); }}>
-            {/* Ground Interaction Ring */}
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
+        <group position={position} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
+
+            {/* Ground Interaction Area - Only standard click enters project */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} onClick={(e) => { e.stopPropagation(); onEnter(project); }}>
                 <ringGeometry args={[6, 7, 32]} />
                 <meshBasicMaterial color={project.color || 'white'} opacity={0.6} transparent />
-            </mesh>
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.1, 0]}>
-                <ringGeometry args={[7.2, 7.5, 32]} />
-                <meshBasicMaterial color="white" opacity={hovered ? 1 : 0.3} transparent />
             </mesh>
 
             {/* Title Label - Only visible on hover */}
@@ -283,80 +323,43 @@ const Diamond = ({ position, color }) => (
     </Float>
 );
 
-const Village = ({ onEnterProject }) => {
-    // Random City Layout Generator (Memoized for stability)
-    const layout = useMemo(() => {
-        const items = [];
-        const usedPositions = [];
-        const MIN_DIST = 70; // Increased to 70 for massive spacing
-        const RANGE = 200; // Increased to 200 for larger map
-
-        // 1. Map ALL Projects
-        projects.forEach((p) => {
-            let pos;
-            let attempts = 0;
-            while (!pos && attempts < 100) {
-                const x = (Math.random() - 0.5) * 2 * RANGE;
-                const z = (Math.random() - 0.5) * 2 * RANGE;
-                // Keep clear of center spawn
-                if (Math.hypot(x, z) < 40) { attempts++; continue; }
-                // Check collision
-                if (usedPositions.every(u => Math.hypot(u[0] - x, u[1] - z) > MIN_DIST)) {
-                    pos = [x, 0, z];
-                }
-                attempts++;
-            }
-            // Fallback
-            if (!pos) {
-                const angle = (usedPositions.length / projects.length) * Math.PI * 2;
-                const radius = 120 + (usedPositions.length * 15);
-                pos = [Math.cos(angle) * radius, 0, Math.sin(angle) * radius];
-            }
-            usedPositions.push(pos);
-            items.push({ type: 'project', data: p, pos });
-        });
-
-        // 2. Add Decorative Buildings (Skyscrapers)
-        for (let i = 0; i < 40; i++) {
-            let pos;
-            let attempts = 0;
-            while (!pos && attempts < 50) {
-                const x = (Math.random() - 0.5) * 2 * RANGE;
-                const z = (Math.random() - 0.5) * 2 * RANGE;
-                if (Math.hypot(x, z) < 40) { attempts++; continue; }
-                if (usedPositions.every(u => Math.hypot(u[0] - x, u[1] - z) > 30)) {
-                    pos = [x, 0, z];
-                }
-                attempts++;
-            }
-            if (pos) {
-                usedPositions.push(pos);
-                items.push({ type: 'deco', pos, scale: 0.5 + Math.random(), height: 10 + Math.random() * 20 });
-            }
+const Village = ({ onEnterProject, onPlatformsUpdate, playerRef, layout }) => {
+    // Calculate Platforms
+    useEffect(() => {
+        if (onPlatformsUpdate && layout) {
+            const platforms = layout
+                .filter(item => item.type === 'project')
+                .map(item => ({
+                    pos: [item.pos[0], 25, item.pos[2]], // Top of building
+                    size: [16, 16], // Generous radius for top
+                    height: 25.5 // Slightly above visual floor
+                }));
+            onPlatformsUpdate(platforms);
         }
-        return items;
-    }, []);
+    }, [layout, onPlatformsUpdate]);
+
 
     return (
         <group>
             {/* Roads */}
-            <Road position={[0, 0, 0]} length={500} width={15} />
-            <Road position={[0, 0, 0]} rotation={Math.PI / 2} length={500} width={15} />
+            <Road position={[0, 0, 0]} length={1000} width={20} />
+            <Road position={[0, 0, 0]} rotation={Math.PI / 2} length={1000} width={20} />
 
             {/* Center Plaza */}
             <mesh position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-                <circleGeometry args={[15, 32]} />
-                <meshStandardMaterial color="#e0c0ff" roughness={0.4} />
+                <circleGeometry args={[25, 32]} />
+                <meshStandardMaterial color="#444" roughness={0.4} />
             </mesh>
 
-            {layout.map((item, i) => {
+            {layout && layout.map((item, i) => {
                 if (item.type === 'project') {
-                    return <ProjectZone key={item.data.id} position={item.pos} project={item.data} index={i} onEnter={onEnterProject} />;
+                    // PASS POSITION to onEnterProject
+                    return <ProjectZone key={item.data.id} position={item.pos} project={item.data} index={i} onEnter={(proj) => onEnterProject(proj, item.pos)} playerRef={playerRef} />;
                 } else {
                     // Decorative Skyscrapers using high-res models
                     return (
                         <group key={'deco' + i} position={item.pos}>
-                            <ComplexBuilding index={i + 13} hovered={false} project={null} />
+                            <ComplexBuilding index={i + 13} hovered={false} project={null} showObservationDeck={false} />
                         </group>
                     );
                 }
@@ -367,15 +370,49 @@ const Village = ({ onEnterProject }) => {
 
 const FullScreenGallery = ({ images, initialIndex = 0, onClose }) => {
     const [index, setIndex] = useState(initialIndex);
+    const [touchStart, setTouchStart] = useState(0);
+    const [touchEnd, setTouchEnd] = useState(0);
+    const [mouseDownX, setMouseDownX] = useState(null);
 
     const handleNext = (e) => {
-        e.stopPropagation();
+        e && e.stopPropagation();
         setIndex((prev) => (prev + 1) % images.length);
     };
 
     const handlePrev = (e) => {
-        e.stopPropagation();
+        e && e.stopPropagation();
         setIndex((prev) => (prev - 1 + images.length) % images.length);
+    };
+
+    const handleTouchStart = (e) => {
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchMove = (e) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > 50;
+        const isRightSwipe = distance < -50;
+        if (isLeftSwipe) handleNext();
+        if (isRightSwipe) handlePrev();
+        setTouchStart(0);
+        setTouchEnd(0);
+    };
+
+    const handleMouseDown = (e) => {
+        setMouseDownX(e.clientX);
+    };
+
+    const handleMouseUp = (e) => {
+        if (mouseDownX === null) return;
+        const distance = mouseDownX - e.clientX;
+        if (distance > 50) handleNext();
+        if (distance < -50) handlePrev();
+        setMouseDownX(null);
     };
 
     useEffect(() => {
@@ -389,7 +426,16 @@ const FullScreenGallery = ({ images, initialIndex = 0, onClose }) => {
     }, [onClose, images.length]);
 
     return (
-        <div className="lightbox-overlay" onClick={onClose} style={{ zIndex: 10000 }}>
+        <div
+            className="lightbox-overlay"
+            onClick={onClose}
+            style={{ zIndex: 10000 }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+        >
             <button className="lightbox-close" onClick={onClose}>
                 <X size={32} />
             </button>
@@ -474,7 +520,84 @@ const GalleryScene = () => {
     const playerRef = useRef();
     const audioRef = useRef(null);
     const [activeProject, setActiveProject] = useState(null);
+    const [activeProjectPosition, setActiveProjectPosition] = useState(null); // Track building location
     const [galleryState, setGalleryState] = useState({ isOpen: false, index: 0 });
+
+    // Platform State (from Village)
+    const [platforms, setPlatforms] = useState([]);
+
+    // 1. Generate STABLE City Layout at Top Level
+    const cityLayout = useMemo(() => {
+        const items = [];
+        const usedPositions = [];
+        const MIN_DIST = 70;
+        const RANGE = 200;
+
+        // 1. Map ALL Projects
+        projects.forEach((p) => {
+            let pos;
+            let attempts = 0;
+            while (!pos && attempts < 100) {
+                const x = (Math.random() - 0.5) * 2 * RANGE;
+                const z = (Math.random() - 0.5) * 2 * RANGE;
+                if (Math.hypot(x, z) < 40) { attempts++; continue; }
+                if (usedPositions.every(u => Math.hypot(u[0] - x, u[1] - z) > MIN_DIST)) {
+                    pos = [x, 0, z];
+                }
+                attempts++;
+            }
+            if (!pos) {
+                const angle = (usedPositions.length / projects.length) * Math.PI * 2;
+                const radius = 120 + (usedPositions.length * 15);
+                pos = [Math.cos(angle) * radius, 0, Math.sin(angle) * radius];
+            }
+            usedPositions.push(pos);
+            items.push({ type: 'project', data: p, pos });
+        });
+
+        // 2. Add Decorative Skyscrapers
+        for (let i = 0; i < 40; i++) {
+            let pos;
+            let attempts = 0;
+            while (!pos && attempts < 50) {
+                const x = (Math.random() - 0.5) * 2 * RANGE;
+                const z = (Math.random() - 0.5) * 2 * RANGE;
+                if (Math.hypot(x, z) < 40) { attempts++; continue; }
+                if (usedPositions.every(u => Math.hypot(u[0] - x, u[1] - z) > 30)) {
+                    pos = [x, 0, z];
+                }
+                attempts++;
+            }
+            if (pos) {
+                usedPositions.push(pos);
+                items.push({ type: 'deco', pos, scale: 0.5 + Math.random(), height: 10 + Math.random() * 20 });
+            }
+        }
+        return items;
+    }, []);
+
+    // Roof Access Handler
+    const handleGoToRoof = () => {
+        if (activeProjectPosition) {
+            setActiveProject(null); // Exit interior
+            // Teleport player to roof
+            // Roof height is approx 25 + offset
+            if (playerRef.current) {
+                // Determine roof height based on `ComplexBuilding` scaling logic (approx 25)
+                const roofY = 26;
+                playerRef.current.setTranslation({ x: activeProjectPosition[0], y: roofY, z: activeProjectPosition[2] }, true);
+                playerRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
+            }
+        }
+    };
+
+    // Enhanced Enter Handler
+    const handleEnterProject = (project, position) => {
+        setActiveProject(project);
+        setActiveProjectPosition(position);
+    };
+
+
 
     // Audio State
     const [isMuted, setIsMuted] = useState(false);
@@ -689,10 +812,10 @@ const GalleryScene = () => {
                                 />
                             )}
 
-                            <Player ref={playerRef} position={[0, 0, 8]} isDancing={!!currentDance} danceUrl={currentDance?.file} activeAnimationName={currentDance?.animationName} />
-                            <DreamFloor />
+                            <Player ref={playerRef} position={[0, 0, 8]} isDancing={!!currentDance} danceUrl={currentDance?.file} activeAnimationName={currentDance?.animationName} platforms={platforms} />
+                            <CityFloor />
 
-                            <Village onEnterProject={setActiveProject} />
+                            <Village onEnterProject={handleEnterProject} onPlatformsUpdate={setPlatforms} playerRef={playerRef} layout={cityLayout} />
 
                             <SpotifyWidget3D position={[-12, 4, 12]} />
                             <InteractiveCrates count={15} playerRef={playerRef} />
@@ -731,13 +854,19 @@ const GalleryScene = () => {
                                 totalBucks={totalBucks}
                                 setDiscoMode={setDiscoMode}
                                 locations={BEAR_BUCK_LOCATIONS}
+                                platforms={platforms}
                             />
 
                         </>
                     ) : (
                         <>
                             <color attach="background" args={['#222']} />
-                            <ProjectInterior project={activeProject} onExit={() => setActiveProject(null)} onImageClick={(idx) => setGalleryState({ isOpen: true, index: idx })} />
+                            <ProjectInterior
+                                project={activeProject}
+                                onExit={() => setActiveProject(null)}
+                                onGoToRoof={handleGoToRoof}
+                                onImageClick={(idx) => setGalleryState({ isOpen: true, index: idx })}
+                            />
                         </>
                     )}
                 </Suspense>

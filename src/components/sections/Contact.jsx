@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { Mail, MapPin, Linkedin, Github, Twitter } from 'lucide-react';
+import { Mail, MapPin, Linkedin, Github, Twitter, Youtube, Video, Music } from 'lucide-react';
 import './Contact.css';
 
 const Contact = () => {
@@ -128,8 +128,11 @@ const Contact = () => {
 
                             <div className="social-links">
                                 <a href="https://github.com/ap519925" className="social-btn"><Github size={20} /></a>
-                                <a href="https://linkedin.com" className="social-btn"><Linkedin size={20} /></a>
-                                <a href="https://twitter.com/bearish_bulls" className="social-btn"><Twitter size={20} /></a>
+                                <a href="https://www.linkedin.com/in/anthony-phillips-dev/" className="social-btn"><Linkedin size={20} /></a>
+                                <a href="https://x.com/bearish_bulls" className="social-btn"><Twitter size={20} /></a>
+                                <a href="https://www.youtube.com/@jpowbrrrrrr" className="social-btn"><Youtube size={20} /></a>
+                                <a href="https://www.tiktok.com/@antman1660" className="social-btn"><Video size={20} /></a>
+                                <a href="https://open.spotify.com/playlist/3GWBkCGdj8G3iQ3we1DKwu" className="social-btn"><Music size={20} /></a>
                             </div>
                         </div>
 

@@ -18,6 +18,8 @@ const ProjectPage = () => {
     }, [id]);
 
     const [selectedIndex, setSelectedIndex] = React.useState(null);
+    const touchStart = React.useRef(0);
+    const touchEnd = React.useRef(0);
 
     // Keyboard Navigation for Lightbox
     useEffect(() => {
@@ -181,6 +183,18 @@ const ProjectPage = () => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setSelectedIndex(null)}
+                        onTouchStart={(e) => { touchStart.current = e.targetTouches[0].clientX; }}
+                        onTouchMove={(e) => { touchEnd.current = e.targetTouches[0].clientX; }}
+                        onTouchEnd={() => {
+                            if (!touchStart.current || !touchEnd.current) return;
+                            const distance = touchStart.current - touchEnd.current;
+                            const isLeftSwipe = distance > 50;
+                            const isRightSwipe = distance < -50;
+                            if (isLeftSwipe) showNext();
+                            if (isRightSwipe) showPrev();
+                            touchStart.current = 0;
+                            touchEnd.current = 0;
+                        }}
                     >
                         <motion.button className="lightbox-close" onClick={() => setSelectedIndex(null)} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                             <X size={32} />
@@ -199,6 +213,17 @@ const ProjectPage = () => {
                             animate={{ x: 0, opacity: 1 }}
                             exit={{ x: -20, opacity: 0 }}
                             transition={{ duration: 0.3 }}
+                            drag="x"
+                            dragConstraints={{ left: 0, right: 0 }}
+                            dragElastic={0.8}
+                            onDragEnd={(e, { offset, velocity }) => {
+                                const swipe = offset.x; // Drag distance
+                                if (swipe < -50) {
+                                    showNext();
+                                } else if (swipe > 50) {
+                                    showPrev();
+                                }
+                            }}
                             onClick={(e) => e.stopPropagation()}
                         />
 

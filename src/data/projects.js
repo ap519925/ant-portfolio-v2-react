@@ -71,6 +71,80 @@ export const projects = [
         }
     },
     {
+        id: 'bearish-bulls',
+        title: 'Bearish Bulls App',
+        category: 'Web App',
+        color: '#1f2d3a', // Slate Blue
+        description: 'A trading group web application for financial analysis and community.',
+        link: 'https://mtanthony.com/work/web/bearishbulls',
+        image: '/assets/bearish-bulls-images/bearishbulls.png',
+        gallery: [
+            '/assets/bearish-bulls-images/bbnet2.webp',
+            '/assets/bearish-bulls-images/bbnet3.webp',
+            '/assets/bearish-bulls-images/bbnet4.webp',
+            '/assets/bearish-bulls-images/bbnet7.webp',
+            '/assets/bearish-bulls-images/bbapp1.png',
+            '/assets/bearish-bulls-images/bbapp2.png',
+            '/assets/bearish-bulls-images/bbapp3.png',
+            '/assets/bearish-bulls-images/bbapp4.png',
+            '/assets/bearish-bulls-images/bbapp6.png',
+            '/assets/bearish-bulls-images/bbapp7.png',
+            '/assets/bearish-bulls-images/bbapp9.png',
+            '/assets/bearish-bulls-images/bbapp10.png',
+            '/assets/bearish-bulls-images/bbapp14.png',
+            '/assets/bearish-bulls-images/bbapp16.png'
+        ],
+        bg: 'linear-gradient(135deg, #1f2d3a 0%, #10101a 100%)',
+        tags: ['React', 'Finance', 'Dashboard'],
+        content: {
+            subtitle: 'Financial Community Platform',
+            overview: "Built a comprehensive platform for traders to track markets, share analysis, and communicate.",
+            contributions: [
+                "Developed real-time charting interfaces",
+                "Implemented user authentication and subscription management",
+                "Integrated multiple financial data APIs"
+            ],
+            technologies: ["React", "Node.js", "Firebase", "TradingView API"]
+        }
+    },
+    {
+        id: 'design-works',
+        title: 'Design Works',
+        category: 'Design',
+        color: '#3a1c36', // Moody Purple
+        description: 'A collection of my creative design projects and UI/UX explorations.',
+        link: 'https://mtanthony.com/work/design/design',
+        image: '/assets/design-images/IM.png',
+        gallery: [
+            '/assets/design-images/IM.png',
+            '/assets/design-images/PHILLIPS.png',
+            '/assets/design-images/advertkl.png',
+            '/assets/design-images/bearishbulls.png',
+            '/assets/design-images/dcrump.png',
+            '/assets/design-images/klshop.png',
+            '/assets/design-images/activelanding.png',
+            '/assets/design-images/circus.png',
+            '/assets/design-images/game.png',
+            '/assets/design-images/giantmanglobal.png',
+            '/assets/design-images/lamienguyen.png',
+            '/assets/design-images/majorkeysports.png',
+            '/assets/design-images/unaocdes1.png',
+            '/assets/design-images/unaocdes3.png'
+        ],
+        bg: 'linear-gradient(135deg, #3a1c36 0%, #10101a 100%)',
+        tags: ['UI/UX', 'Graphics', 'Creative'],
+        content: {
+            subtitle: 'Creative Design Portfolio',
+            overview: "A showcase of various design projects spanning web, mobile, and print media.",
+            contributions: [
+                "UI/UX Design for web applications",
+                "Brand identity creation",
+                "Marketing material design"
+            ],
+            technologies: ["Figma", "Adobe CC", "Sketch", "Prototyping"]
+        }
+    },
+    {
         id: 'intrepid-museum',
         title: 'Intrepid Museum',
         category: 'Web Development',
@@ -105,12 +179,12 @@ export const projects = [
         color: '#2a1f2d', // Deep Purple/Brown
         description: 'Corporate website for the Massachusetts Port Authority.',
         link: 'https://mtanthony.com/work/web/massport',
-        image: '/assets/portfolio/massport_front.jpg',
+        image: '/assets/massport-images/massport_front.jpg',
         gallery: [
-            '/assets/portfolio/massport_1.png',
-            '/assets/portfolio/massport_2.png',
-            '/assets/portfolio/massport_4.jpg',
-            '/assets/portfolio/massport_5.jpg'
+            '/assets/massport-images/massport_1.png',
+            '/assets/massport-images/massport_2.png',
+            '/assets/massport-images/massport_4.jpg',
+            '/assets/massport-images/massport_5.jpg'
         ],
         bg: 'linear-gradient(135deg, #2a1f2d 0%, #10101a 100%)',
         tags: ['Development', 'Public Sector'],
@@ -127,63 +201,6 @@ export const projects = [
                 "Deployment & Maintenance: Automated deployment workflows across local, dev, staging, and production environments using GitHub Actions and Acquia Cloud."
             ],
             technologies: ["Drupal 10", "React.js", "PHP", "JavaScript", "Acquia Cloud", "GitHub", "Datadog", "Google Analytics", "Webpack", "Gulp", "SASS", "Twig", "SQL", "JSX"]
-        }
-    },
-    {
-        id: 'bearish-bulls',
-        title: 'Bearish Bulls App',
-        category: 'Web App',
-        color: '#1f2d3a', // Slate Blue
-        description: 'A trading group web application for financial analysis and community.',
-        link: 'https://mtanthony.com/work/web/bearishbulls',
-        image: '/assets/bearish-bulls-images/bearishbulls.png',
-        gallery: [
-            '/assets/bearish-bulls-images/bbnet2.webp',
-            '/assets/bearish-bulls-images/bbnet3.webp',
-            '/assets/bearish-bulls-images/bbnet4.webp',
-            '/assets/bearish-bulls-images/bbnet7.webp',
-            '/assets/bearish-bulls-images/bbnet9.webp'
-        ],
-        bg: 'linear-gradient(135deg, #1f2d3a 0%, #10101a 100%)',
-        tags: ['React', 'Finance', 'Dashboard'],
-        content: {
-            subtitle: 'Financial Community Platform',
-            overview: "Built a comprehensive platform for traders to track markets, share analysis, and communicate.",
-            contributions: [
-                "Developed real-time charting interfaces",
-                "Implemented user authentication and subscription management",
-                "Integrated multiple financial data APIs"
-            ],
-            technologies: ["React", "Node.js", "Firebase", "TradingView API"]
-        }
-    },
-    {
-        id: 'design-works',
-        title: 'Design Works',
-        category: 'Design',
-        color: '#3a1c36', // Moody Purple
-        description: 'A collection of my creative design projects and UI/UX explorations.',
-        link: 'https://mtanthony.com/work/design/design',
-        image: '/assets/design-images/IM.png',
-        gallery: [
-            '/assets/design-images/IM.png',
-            '/assets/design-images/PHILLIPS.png',
-            '/assets/design-images/advertkl.png',
-            '/assets/design-images/bearishbulls.png',
-            '/assets/design-images/dcrump.png',
-            '/assets/design-images/klshop.png'
-        ],
-        bg: 'linear-gradient(135deg, #3a1c36 0%, #10101a 100%)',
-        tags: ['UI/UX', 'Graphics', 'Creative'],
-        content: {
-            subtitle: 'Creative Design Portfolio',
-            overview: "A showcase of various design projects spanning web, mobile, and print media.",
-            contributions: [
-                "UI/UX Design for web applications",
-                "Brand identity creation",
-                "Marketing material design"
-            ],
-            technologies: ["Figma", "Adobe CC", "Sketch", "Prototyping"]
         }
     },
     {
@@ -240,10 +257,11 @@ export const projects = [
         color: '#3a2e1c', // Bronze/Gold
         description: 'Bitcoin ATM locator and cryptocurrency information platform.',
         link: 'https://mtanthony.com/work/web/unbankworld',
-        image: '/assets/portfolio/massport_front.jpg', // Placeholder for missing stock-3.jpg
+        image: '/assets/unbank-images/unbank.png',
         gallery: [
-            '/assets/unbank.png',
-            '/assets/unbank2.png'
+            '/assets/unbank-images/unbank.png',
+            '/assets/unbank-images/unbank2.png',
+            '/assets/unbank-images/stock-3.jpg'
         ],
         bg: 'linear-gradient(135deg, #3a2e1c 0%, #10101a 100%)',
         tags: ['Crypto', 'Bitcoin', 'Maps'],
@@ -265,8 +283,16 @@ export const projects = [
         color: '#00629B', // IEEE Blue
         description: 'Development and maintenance of the IEEE Communications Society website and related microsites.',
         link: 'https://www.comsoc.org',
-        image: '/assets/ieee-comsoc.png',
-        gallery: ['/assets/ieee-comsoc.png'],
+        image: '/assets/comsoc-images/Screenshot 2026-01-08 171832.png',
+        gallery: [
+            '/assets/comsoc-images/Screenshot 2026-01-08 171832.png',
+            '/assets/comsoc-images/Screenshot 2026-01-08 172002.png',
+            '/assets/comsoc-images/Screenshot 2026-01-08 172106.png',
+            '/assets/comsoc-images/Screenshot 2026-01-08 172320.png',
+            '/assets/comsoc-images/Screenshot 2026-01-08 172413.png',
+            '/assets/comsoc-images/Screenshot 2026-01-08 172450.png',
+            '/assets/comsoc-images/Screenshot 2026-01-08 172544.png'
+        ],
         bg: 'linear-gradient(135deg, #00629B 0%, #10101a 100%)',
         tags: ['Drupal', 'PHP', 'Solr', 'SASS'],
         content: {
@@ -341,12 +367,13 @@ export const projects = [
         color: '#11998e', // Green
         description: 'Designed WP website for a family-run pottery studio.',
         link: 'http://www.thepotteryplace.com',
-        image: '/assets/potteryplace.png',
+        image: '/assets/logos/potteryplace.png',
         gallery: [
-            '/assets/portfolio/potteryplace2.webp',
-            '/assets/portfolio/potteryplace4.webp',
-            '/assets/portfolio/potteryplace6.webp',
-            '/assets/portfolio/potteryplace8.webp'
+            '/assets/potteryplace-images/cake.webp',
+            '/assets/potteryplace-images/potteryplace2.webp',
+            '/assets/potteryplace-images/potteryplace4.webp',
+            '/assets/potteryplace-images/potteryplace6.webp',
+            '/assets/potteryplace-images/potteryplace8.webp'
         ],
         bg: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
         tags: ['WordPress', 'Small Business', 'Design'],

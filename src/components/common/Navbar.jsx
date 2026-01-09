@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Github, Linkedin, Twitter, Youtube, Home } from 'lucide-react';
+import { Menu, X, Github, Linkedin, Twitter, Youtube, Home, TrendingUp, LineChart, Video, Music } from 'lucide-react';
 import ThemeBall from './ThemeBall';
 import './Navbar.css';
 
@@ -105,9 +105,28 @@ const Navbar = () => {
             {/* Destination for Theme Ball */}
             <div ref={destRef} className="theme-toggle-placeholder theme-placeholder" style={{ marginLeft: '2px' }} />
 
+            {/* Social Icons (Desktop) */}
+            <div className="nav-socials" style={{ display: 'flex', gap: '15px', marginLeft: '20px', alignItems: 'center' }}>
+              <a href="https://github.com/ap519925" target="_blank" rel="noopener noreferrer" className="nav-social-link"><Github size={20} /></a>
+              <a href="https://www.linkedin.com/in/anthony-phillips-dev/" target="_blank" rel="noopener noreferrer" className="nav-social-link"><Linkedin size={20} /></a>
+              <a href="https://x.com/bearish_bulls" target="_blank" rel="noopener noreferrer" className="nav-social-link"><Twitter size={20} /></a>
+              <a href="https://www.youtube.com/@jpowbrrrrrr" target="_blank" rel="noopener noreferrer" className="nav-social-link"><Youtube size={20} /></a>
+              <a href="https://stocktwits.com/DONALD_CRUMP" target="_blank" rel="noopener noreferrer" className="nav-social-link" title="StockTwits"><TrendingUp size={20} /></a>
+              <a href="https://www.tradingview.com/u/DONALD-CRUMP/" target="_blank" rel="noopener noreferrer" className="nav-social-link" title="TradingView"><LineChart size={20} /></a>
+              <a href="https://www.tiktok.com/@antman1660" target="_blank" rel="noopener noreferrer" className="nav-social-link" title="TikTok"><Video size={20} /></a>
+              <a href="https://open.spotify.com/playlist/3GWBkCGdj8G3iQ3we1DKwu" target="_blank" rel="noopener noreferrer" className="nav-social-link" title="Spotify"><Music size={20} /></a>
+            </div>
+
+            {/* Social Icons (Mobile Menu) */}
             <div className="social-links-mobile">
               <a href="https://github.com/ap519925" target="_blank" rel="noopener noreferrer"><Github size={20} /></a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"><Linkedin size={20} /></a>
+              <a href="https://www.linkedin.com/in/anthony-phillips-dev/" target="_blank" rel="noopener noreferrer"><Linkedin size={20} /></a>
+              <a href="https://x.com/bearish_bulls" target="_blank" rel="noopener noreferrer"><Twitter size={20} /></a>
+              <a href="https://www.youtube.com/@jpowbrrrrrr" target="_blank" rel="noopener noreferrer"><Youtube size={20} /></a>
+              <a href="https://stocktwits.com/DONALD_CRUMP" target="_blank" rel="noopener noreferrer"><TrendingUp size={20} /></a>
+              <a href="https://www.tradingview.com/u/DONALD-CRUMP/" target="_blank" rel="noopener noreferrer"><LineChart size={20} /></a>
+              <a href="https://www.tiktok.com/@antman1660" target="_blank" rel="noopener noreferrer"><Video size={20} /></a>
+              <a href="https://open.spotify.com/playlist/3GWBkCGdj8G3iQ3we1DKwu" target="_blank" rel="noopener noreferrer"><Music size={20} /></a>
             </div>
           </div>
 

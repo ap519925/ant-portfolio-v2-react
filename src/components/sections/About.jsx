@@ -334,9 +334,9 @@ const About = () => {
                             </div>
                             <p className="bio-text">
                                 I'm <span className="highlight">Anthony Phillips</span>, a Senior Full-Stack Engineer with 10+ years of experience.
-                                Based in NYC, I specialize in architecting complex **Drupal** ecosystems and building high-performance **React** applications.
+                                Based in NYC, I specialize in architecting complex <b>Drupal</b> ecosystems and building high-performance <b>React</b> applications.
                                 <br /><br />
-                                I blend technical expertise in **PHP 8, JavaScript, and Cloud Ops** with a passion for **Financial Analysis**.
+                                I blend technical expertise in <b>PHP 8, JavaScript, and Cloud Ops</b> with a passion for <b>Financial Analysis</b>.
                             </p>
                         </div>
 
