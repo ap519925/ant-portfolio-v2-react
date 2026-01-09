@@ -32,6 +32,35 @@ const BUILDING_MODELS = [
 // Preload models
 BUILDING_MODELS.forEach(url => useGLTF.preload(url));
 
+// Simple Error Boundary Component
+class ErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false };
+    }
+    static getDerivedStateFromError(error) {
+        return { hasError: true };
+    }
+    componentDidCatch(error, errorInfo) {
+        console.error("Interior Loading Error:", error, errorInfo);
+    }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <group>
+                    <Text position={[0, 2, -5]} color="red" fontSize={0.5}>
+                        Failed to load interior assets.
+                    </Text>
+                    <Text position={[0, 1.5, -5]} color="yellow" fontSize={0.3} onClick={this.props.onExit}>
+                        Click to Exit
+                    </Text>
+                </group>
+            );
+        }
+        return this.props.children;
+    }
+}
+
 // --- HELPERS ---
 const CityFloor = () => (
     <group rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]}>
@@ -222,44 +251,7 @@ const ComplexBuilding = ({ project, hovered, index, showObservationDeck }) => {
 };
 
 
-const DOOR_MODEL = '/assets/models/minecraft_wooden_door.glb';
-useGLTF.preload(DOOR_MODEL);
-
-const DoorModel = ({ onClick, label }) => {
-    const { scene } = useGLTF(DOOR_MODEL);
-    const clone = useMemo(() => {
-        const c = scene.clone();
-        c.traverse((node) => {
-            if (node.isMesh) {
-                node.castShadow = true;
-                node.receiveShadow = true;
-            }
-        });
-        return c;
-    }, [scene]);
-
-    // Hover effect
-    const [hovered, setHover] = useState(false);
-
-    return (
-        <group onClick={onClick} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
-            <primitive object={clone} scale={1.5} rotation={[0, Math.PI / 2, 0]} />
-
-            {/* Glowing Frame/Indicator */}
-            {hovered && (
-                <mesh position={[0, 1, 0]}>
-                    <boxGeometry args={[1.2, 2.2, 0.2]} />
-                    <meshBasicMaterial color="gold" opacity={0.3} transparent />
-                </mesh>
-            )}
-
-            {/* Label */}
-            <group position={[0, 2.5, 0]}>
-                <Text fontSize={0.3} color="white" anchorY="bottom">{label}</Text>
-            </group>
-        </group>
-    );
-};
+// DoorModel removed (was unused here, used inside ProjectInterior)
 
 const ProjectZone = ({ position, project, index, onEnter }) => {
     const [hovered, setHover] = useState(false);
@@ -301,7 +293,9 @@ const ProjectZone = ({ position, project, index, onEnter }) => {
             )}
 
             {/* The Building */}
-            <ComplexBuilding project={project} hovered={hovered} index={index} />
+            <group onClick={(e) => { e.stopPropagation(); onEnter(project); }}>
+                <ComplexBuilding project={project} hovered={hovered} index={index} />
+            </group>
 
             {/* Floating Diamond Indicator */}
             <Diamond position={[0, height + 8, 0]} color={color} />
@@ -861,12 +855,14 @@ const GalleryScene = () => {
                     ) : (
                         <>
                             <color attach="background" args={['#222']} />
-                            <ProjectInterior
-                                project={activeProject}
-                                onExit={() => setActiveProject(null)}
-                                onGoToRoof={handleGoToRoof}
-                                onImageClick={(idx) => setGalleryState({ isOpen: true, index: idx })}
-                            />
+                            <ErrorBoundary onExit={() => setActiveProject(null)}>
+                                <ProjectInterior
+                                    project={activeProject}
+                                    onExit={() => setActiveProject(null)}
+                                    onGoToRoof={handleGoToRoof}
+                                    onImageClick={(idx) => setGalleryState({ isOpen: true, index: idx })}
+                                />
+                            </ErrorBoundary>
                         </>
                     )}
                 </Suspense>

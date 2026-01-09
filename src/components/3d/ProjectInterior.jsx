@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
-import { Html, Image as DreiImage, Text, Float } from '@react-three/drei';
+import { Html, Image as DreiImage, Text, Float, useGLTF } from '@react-three/drei';
 import Player from './Player';
 
 // --- ASSETS ---
@@ -70,22 +70,8 @@ const Room = ({ width = 20, height = 8, depth = 20, color = '#fff' }) => {
     );
 };
 
-const DOOR_MODEL = '/assets/models/minecraft_wooden_door.glb';
-useGLTF.preload(DOOR_MODEL);
-
 const DoorModel = ({ onClick, label, color = 'red' }) => {
-    const { scene } = useGLTF(DOOR_MODEL);
-    const clone = useMemo(() => {
-        const c = scene.clone();
-        c.traverse((node) => {
-            if (node.isMesh) {
-                node.castShadow = true;
-                node.receiveShadow = true;
-            }
-        });
-        return c;
-    }, [scene]);
-
+    // Simple Box Door to avoid GLB loading issues
     const [hovered, setHover] = useState(false);
 
     useEffect(() => {
@@ -95,13 +81,20 @@ const DoorModel = ({ onClick, label, color = 'red' }) => {
 
     return (
         <group onClick={(e) => { e.stopPropagation(); onClick(); }} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
-            <primitive object={clone} scale={1.5} rotation={[0, 0, 0]} />
+            {/* Door Mesh */}
+            <mesh position={[0, 1, 0]}>
+                <boxGeometry args={[1.2, 2.2, 0.2]} />
+                <meshStandardMaterial color="#5D4037" />
+            </mesh>
+
+            {/* Glow/Hover Effect */}
             {hovered && (
                 <mesh position={[0, 1, 0]}>
-                    <boxGeometry args={[1.2, 2.2, 0.2]} />
+                    <boxGeometry args={[1.3, 2.3, 0.25]} />
                     <meshBasicMaterial color={color} opacity={0.3} transparent />
                 </mesh>
             )}
+
             <Text position={[0, 2.8, 0]} fontSize={0.5} color="white">{label}</Text>
         </group>
     );

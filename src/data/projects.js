@@ -55,8 +55,18 @@ export const projects = [
         color: '#e67e22', // Orange
         description: 'A mobile application designed to simplify the parking experience in New York City.',
         link: '#',
-        image: '/assets/portfolio/massport_front.jpg', // Placeholder for missing stock-3.jpg
-        gallery: [],
+        image: '/assets/prkapp-images/Screenshot_20260108_155629.jpg',
+        gallery: [
+            '/assets/prkapp-images/Screenshot_20260108_155629.jpg',
+            '/assets/prkapp-images/Screenshot_20260108_155642.jpg',
+            '/assets/prkapp-images/Screenshot_20260108_155649.jpg',
+            '/assets/prkapp-images/Screenshot_20260108_155657.jpg',
+            '/assets/prkapp-images/Screenshot_20260108_155752.jpg',
+            '/assets/prkapp-images/Screenshot_20260108_155828.jpg',
+            '/assets/prkapp-images/Screenshot_20260108_155917.jpg',
+            '/assets/prkapp-images/Screenshot_20260108_155933.jpg',
+            '/assets/prkapp-images/Screenshot_20260108_155957.jpg'
+        ],
         bg: 'linear-gradient(135deg, #e67e22 0%, #2f3542 100%)',
         tags: ['React Native', 'Google Maps', 'Node.js'],
         content: {
@@ -397,8 +407,7 @@ export const projects = [
         link: 'https://choicesconsulting.com/',
         image: '/assets/choicesconsulting.webp',
         gallery: [
-            '/assets/choicesconsulting.webp',
-            '/assets/choiceslogo.webp'
+            '/assets/choicesconsulting.webp'
         ],
         bg: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)',
         tags: ['WordPress', 'Plugin Dev', 'Consulting'],
